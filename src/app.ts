@@ -2,7 +2,7 @@ import express, { Application, Request, Response } from 'express';
 import pool from './config/dbConfig';
 
 const app: Application = express();
-const port = parseInt(process.env.PORT || '3000', 10);
+const port = 3000;
 
 app.get('/', async (req: Request, res: Response) => {
   res.send('Hello express');
