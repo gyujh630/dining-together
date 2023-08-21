@@ -13,5 +13,3 @@ export const fetchStoreById = async (
   const store = await StoreModel.getStoreById(storeId);
   return store;
 };
-
-// 나머지 CRUD 함수도 유사하게 구현
