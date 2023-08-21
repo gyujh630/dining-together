@@ -1,7 +1,4 @@
-// models/StoreModel.ts
 import db from '../config/dbConfig';
-
-type QueryResult<T> = [T[], unknown];
 
 export interface Store {
   storeId?: number; // 자동 생성

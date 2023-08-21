@@ -1,30 +1,32 @@
 import { Request, Response } from 'express';
-import * as StoreService from '../services/StoreService';
+import { Store, createStore, getStoreById } from '../models/StoreModel';
 
-// 가게 생성
-export const createStore = async (req: Request, res: Response) => {
+export const createNewStore = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
-    const storeData = req.body;
-    const storeId = await StoreService.createNewStore(storeData);
+    const newStore: Store = req.body;
+    const storeId = await createStore(newStore);
     res.status(201).json({ storeId });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Failed to create store' });
+    res.status(500).json({ error: 'Failed to create store' });
   }
 };
 
-// 가게 조회
-export const getStore = async (req: Request, res: Response) => {
+// GET /stores/:storeId
+export const getStore = async (req: Request, res: Response): Promise<void> => {
   try {
-    const storeId = parseInt(req.params.storeId);
-    const store = await StoreService.fetchStoreById(storeId);
+    const storeId = parseInt(req.params.storeId, 10);
+    const store = await getStoreById(storeId);
     if (store) {
       res.status(200).json(store);
     } else {
-      res.status(404).json({ message: 'Store not found' });
+      res.status(404).json({ error: 'Store not found' });
     }
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Failed to fetch store' });
+    res.status(500).json({ error: 'Failed to fetch store' });
   }
 };
