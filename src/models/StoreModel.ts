@@ -1,4 +1,4 @@
-import db from '../config/dbConfig';
+import pool from '../config/dbConfig';
 
 export interface Store {
   storeId?: number; // 자동 생성
@@ -45,7 +45,7 @@ export const createStore = async (store: Store): Promise<number> => {
       store.reviewCount,
       store.isDeleted,
     ];
-    const [result] = await db.query(query, values);
+    const [result] = await pool.query(query, values);
     return (result as any).insertId as number;
   } catch (error) {
     console.error(error);
@@ -58,7 +58,7 @@ export const getAllStores = async (): Promise<Store[]> => {
     const query = `
       SELECT * FROM STORE;
     `;
-    const [rows] = await db.query(query);
+    const [rows] = await pool.query(query);
     return rows as Store[];
   } catch (error) {
     console.error(error);
@@ -71,7 +71,7 @@ export const getStoreById = async (storeId: number): Promise<Store | null> => {
     const query = `
       SELECT * FROM STORE WHERE storeId = ?;
     `;
-    const [rows] = await db.query(query, [storeId]);
+    const [rows] = await pool.query(query, [storeId]);
     if (Array.isArray(rows) && rows.length > 0) {
       return rows[0] as Store;
     }
@@ -113,7 +113,7 @@ export const updateStore = async (
       updatedStore.isDeleted,
       storeId,
     ];
-    await db.query(query, values);
+    await pool.query(query, values);
   } catch (error) {
     console.error(error);
     throw new Error('Failed to update store');
@@ -125,7 +125,7 @@ export const deleteStore = async (storeId: number): Promise<void> => {
     const query = `
       DELETE FROM STORE WHERE storeId = ?;
     `;
-    await db.query(query, [storeId]);
+    await pool.query(query, [storeId]);
   } catch (error) {
     console.error(error);
     throw new Error('Failed to delete store');
