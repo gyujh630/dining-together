@@ -9,7 +9,7 @@ app.get('/', async (req: Request, res: Response) => {
   res.send('Hello express');
 });
 
-app.use('/api/store', storeRouter);
+app.use('/api/stores', storeRouter);
 
 app.listen(port, function () {
   console.log(`App is listening on port ${port} !`);

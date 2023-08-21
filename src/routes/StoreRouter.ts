@@ -1,9 +1,18 @@
 import express from 'express';
-import { createNewStore, getStore } from '../controllers/StoreController';
+import {
+  createStoreHandler,
+  getAllStoresHandler,
+  getStoreHandler,
+  updateStoreHandler,
+  deleteStoreHandler,
+} from '../controllers/StoreController';
 
 const storeRouter = express.Router();
 
-storeRouter.post('/', createNewStore);
-storeRouter.get('/', getStore);
+storeRouter.post('/', createStoreHandler);
+storeRouter.get('/', getAllStoresHandler);
+storeRouter.get('/:storeId', getStoreHandler);
+storeRouter.put('/:storeId', updateStoreHandler);
+storeRouter.delete('/:storeId', deleteStoreHandler);
 
 export default storeRouter;
