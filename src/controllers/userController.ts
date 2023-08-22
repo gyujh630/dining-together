@@ -40,6 +40,19 @@ export async function getUserHandler(
   }
 }
 
+// 모든 회원 조회
+export async function getAllUserHandler(
+  req: Request,
+  res: Response
+): Promise<void> {
+  try {
+    const users = await getAllUser();
+    res.json(users);
+  } catch (error: any) {
+    res.status(500).send(`Error: ${error.message}`);
+  }
+}
+
 // 회원 수정
 export async function updateUserHandler(
   req: Request,
@@ -64,19 +77,6 @@ export async function deleteUserHandler(
     const userId: number = parseInt(req.params.userId, 10);
     await deleteUserById(userId);
     res.send('User deleted successfully');
-  } catch (error: any) {
-    res.status(500).send(`Error: ${error.message}`);
-  }
-}
-
-// 모든 회원 조회
-export async function getAllUserHandler(
-  req: Request,
-  res: Response
-): Promise<void> {
-  try {
-    const users = await getAllUser();
-    res.json(users);
   } catch (error: any) {
     res.status(500).send(`Error: ${error.message}`);
   }
