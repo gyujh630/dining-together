@@ -1,32 +1,35 @@
 import { Request, Response } from 'express';
-import { Connection } from 'mysql2/promise';
 import { User } from '../models/userModel';
-import * as userService from '../services/userService';
+import {
+  createUser,
+  getUserById,
+  getAllUser,
+  updateUserById,
+  deleteUserById,
+} from '../models/userModel';
 
 // 회원 생성
-export async function createUser(
+export async function createUserHandler(
   req: Request,
-  res: Response,
-  connection: Connection
-) {
+  res: Response
+): Promise<void> {
   try {
-    const user: User = req.body;
-    const createdUser = await userService.createUser(connection, user);
-    res.status(201).json(createdUser);
+    const newUser: User = req.body;
+    const createdUserId = await createUser(newUser);
+    res.status(201).json({ createdUserId });
   } catch (error: any) {
     res.status(500).send(`Error: ${error.message}`);
   }
 }
 
 // 회원 조회
-export async function getUserById(
+export async function getUserHandler(
   req: Request,
-  res: Response,
-  connection: Connection
-) {
+  res: Response
+): Promise<void> {
   try {
     const userId: number = parseInt(req.params.userId, 10);
-    const user = await userService.getUserById(connection, userId);
+    const user = await getUserById(userId);
     if (!user) {
       res.status(404).send('User not found');
     } else {
@@ -38,15 +41,14 @@ export async function getUserById(
 }
 
 // 회원 수정
-export async function updateUserById(
+export async function updateUserHandler(
   req: Request,
-  res: Response,
-  connection: Connection
-) {
+  res: Response
+): Promise<void> {
   try {
     const userId: number = parseInt(req.params.userId, 10);
     const updatedUser: User = req.body;
-    await userService.updateUserById(connection, userId, updatedUser);
+    await updateUserById(userId, updatedUser);
     res.send('User updated successfully');
   } catch (error: any) {
     res.status(500).send(`Error: ${error.message}`);
@@ -54,15 +56,27 @@ export async function updateUserById(
 }
 
 // 회원 삭제
-export async function deleteUserById(
+export async function deleteUserHandler(
   req: Request,
-  res: Response,
-  connection: Connection
-) {
+  res: Response
+): Promise<void> {
   try {
     const userId: number = parseInt(req.params.userId, 10);
-    await userService.deleteUserById(connection, userId);
+    await deleteUserById(userId);
     res.send('User deleted successfully');
+  } catch (error: any) {
+    res.status(500).send(`Error: ${error.message}`);
+  }
+}
+
+// 모든 회원 조회
+export async function getAllUserHandler(
+  req: Request,
+  res: Response
+): Promise<void> {
+  try {
+    const users = await getAllUser();
+    res.json(users);
   } catch (error: any) {
     res.status(500).send(`Error: ${error.message}`);
   }
