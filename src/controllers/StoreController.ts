@@ -1,5 +1,4 @@
 import { Request, Response } from 'express';
-import { upload } from '../config/uploadConfig'; // upload 설정 불러오기
 import {
   Store,
   createStore,
@@ -8,12 +7,10 @@ import {
   updateStore,
   softDeleteStore,
   deleteStore,
-} from '../models/StoreModel';
-import {
   StoreImage,
   addImageToStore,
   getImagesByStoreId,
-} from '../models/StoreImageModel';
+} from '../models/index';
 
 // 가게 추가
 export const createStoreHandler = async (
@@ -30,7 +27,8 @@ export const createStoreHandler = async (
   }
 };
 
-// 가게 추가(STOREIMAGE 조인)
+// 가게 추가(STOREIMAGE 조인) x
+/*
 export const createStoreWithImageHandler = async (
   req: Request,
   res: Response
@@ -55,6 +53,7 @@ export const createStoreWithImageHandler = async (
     res.status(500).json({ error: 'Failed to create store with image' });
   }
 };
+*/
 
 // 가게 전체 조회
 export const getAllStoresHandler = async (

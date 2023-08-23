@@ -14,7 +14,6 @@ export const addImageToStoreHandler = async (
   try {
     const storeId = parseInt(req.params.storeId, 10);
     const imageUrl = req.body.imageUrl;
-
     const imageId = await addImageToStore(storeId, imageUrl);
     res.status(201).json({ imageId });
   } catch (error) {

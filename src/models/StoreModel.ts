@@ -10,6 +10,21 @@ const convertUtcToKoreaTime = (utcDate: Date): Date => {
   const koreaTime = new Date(utcDate.getTime() + koreaOffset);
   return koreaTime;
 };
+
+// 파일 저장 경로 설정
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'uploads/');
+  },
+  filename: (req, file, cb) => {
+    const extname = path.extname(file.originalname);
+    const filename = `${Date.now()}_${Math.floor(
+      Math.random() * 10000
+    )}${extname}`;
+    cb(null, filename);
+  },
+});
+
 export interface Store {
   storeId?: number; // 자동 생성
   userId: number;
@@ -35,20 +50,6 @@ export interface Store {
   isDeleted: boolean;
   storeImage: StoreImage[]; // STOREIMAGE 테이블의 imageId 배열
 }
-
-// 파일 저장 경로 설정
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, 'uploads/');
-  },
-  filename: (req, file, cb) => {
-    const extname = path.extname(file.originalname);
-    const filename = `${Date.now()}_${Math.floor(
-      Math.random() * 10000
-    )}${extname}`;
-    cb(null, filename);
-  },
-});
 
 // 가게 추가
 export const createStore = async (
@@ -118,22 +119,6 @@ export const getStoreById = async (storeId: number): Promise<Store | null> => {
   } catch (error) {
     console.error(error);
     throw new Error('Failed to fetch store');
-  }
-};
-
-// 특정 가게의 이미지 목록 조회
-export const getImagesByStoreId = async (
-  storeId: number
-): Promise<StoreImage[]> => {
-  try {
-    const query = `
-      SELECT * FROM STOREIMAGE WHERE storeId = ?;
-    `;
-    const [rows] = await pool.query(query, [storeId]);
-    return rows as StoreImage[];
-  } catch (error) {
-    console.error(error);
-    throw new Error('Failed to fetch store images');
   }
 };
 
