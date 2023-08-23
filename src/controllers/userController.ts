@@ -126,9 +126,10 @@ export async function updateUserHandler(
     if (!user) {
       res.status(404).send('User not found');
       return;
+    } else {
+      await updateUserById(userId, updatedUser);
+      res.send('User updated successfully');
     }
-    await updateUserById(userId, updatedUser);
-    res.send('User updated successfully');
   } catch (error: any) {
     res.status(500).send(`Error: ${error.message}`);
   }

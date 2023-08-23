@@ -1,5 +1,6 @@
 import express, { Application, Request, Response } from 'express';
 import { userRouter, storeRouter, homeRouter } from './routes/index';
+import { reservationRouter } from './routes/ReservationRouter';
 
 const app: Application = express();
 const port = 3000;
@@ -12,7 +13,7 @@ app.use(express.json());
 
 app.use('/api/user', userRouter);
 app.use('/api/stores', storeRouter);
-app.use('/api/home', homeRouter);
+//app.use('/api/place', placeRouter);
 
 app.listen(port, function () {
   console.log(`App is listening on port ${port} !`);
