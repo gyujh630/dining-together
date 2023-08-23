@@ -6,12 +6,21 @@ import {
   updateStoreHandler,
   softDeleteStoreHandler,
   deleteStoreHandler,
+  createStoreWithImageHandler,
 } from '../controllers/StoreController';
+import { upload } from '../config/uploadConfig';
 
 const storeRouter = express.Router();
 
 // 가게 추가
 storeRouter.post('/', createStoreHandler);
+
+// 가게 추가(STOREIMAGE 조인) x
+storeRouter.post(
+  '/storeJoinImage',
+  upload.array('images'),
+  createStoreWithImageHandler
+);
 
 // 가게 전체 조회
 storeRouter.get('/', getAllStoresHandler);

@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { upload } from '../config/uploadConfig'; // upload 설정 불러오기
 import {
   Store,
   createStore,
@@ -8,6 +9,11 @@ import {
   softDeleteStore,
   deleteStore,
 } from '../models/StoreModel';
+import {
+  StoreImage,
+  addImageToStore,
+  getImagesByStoreId,
+} from '../models/StoreImageModel';
 
 // 가게 추가
 export const createStoreHandler = async (
@@ -21,6 +27,32 @@ export const createStoreHandler = async (
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Failed to create store' });
+  }
+};
+
+// 가게 추가(STOREIMAGE 조인)
+export const createStoreWithImageHandler = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const newStore: Store = req.body;
+    const files = req.files as Express.Multer.File[];
+
+    const storeId = await createStore(newStore, req);
+
+    const imagePromises = files.map(async (file) => {
+      const imageUrl = `/uploads/${file.filename}`;
+      const imageId = await addImageToStore(storeId, imageUrl);
+      return imageId;
+    });
+
+    await Promise.all(imagePromises);
+
+    res.status(201).json({ storeId });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to create store with image' });
   }
 };
 
@@ -47,6 +79,8 @@ export const getStoreHandler = async (
     const storeId = parseInt(req.params.storeId, 10);
     const store = await getStoreById(storeId);
     if (store) {
+      const images = await getImagesByStoreId(storeId);
+      store.storeImage = images;
       res.status(200).json(store);
     } else {
       res.status(404).json({ error: 'Store not found' });
