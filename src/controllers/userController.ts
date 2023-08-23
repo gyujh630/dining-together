@@ -8,6 +8,7 @@ import {
   updateUserById,
   // deleteUserById,
   authenticateUser,
+  checkEmail,
 } from '../models/userModel';
 
 // 회원가입
@@ -15,11 +16,38 @@ export async function createUserHandler(
   req: Request,
   res: Response
 ): Promise<void> {
-  console.log(req.body);
   try {
     const newUser: User = req.body;
-    const createdUserId = await createUser(newUser);
-    res.status(201).json({ createdUserId }); //+ token
+    const isEmailDuplicate = await checkEmail(newUser.email);
+    if (isEmailDuplicate) {
+      res.status(409).json({ message: '중복된 이메일입니다.' });
+    } else {
+      const createdUserId = await createUser(newUser);
+      res.status(201).json({ createdUserId });
+    }
+  } catch (error: any) {
+    res.status(500).send(`Error: ${error.message}`);
+  }
+}
+
+// 이메일 중복 검사
+export async function checkEmailHandler(
+  req: Request,
+  res: Response
+): Promise<void> {
+  try {
+    const { email } = req.body as { email: string };
+    const isEmailDuplicate = await checkEmail(email);
+
+    if (isEmailDuplicate) {
+      res
+        .status(200)
+        .json({ isDuplicated: true, message: '중복된 이메일입니다.' });
+    } else {
+      res
+        .status(200)
+        .json({ isDuplicated: false, message: '사용 가능한 이메일입니다.' });
+    }
   } catch (error: any) {
     res.status(500).send(`Error: ${error.message}`);
   }
@@ -49,7 +77,7 @@ export async function logOutHandler(
 ): Promise<void> {
   try {
     revokeToken(req.headers.authorization as string); //토큰 무효화
-    res.status(200).json({ message: '로그아웃이 완료되었습니다.' });
+    res.status(200).json({ message: 'Logout Success' });
   } catch (error: any) {
     res.status(500).send(`Error: ${error.message}`);
   }

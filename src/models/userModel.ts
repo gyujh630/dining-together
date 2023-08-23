@@ -1,4 +1,4 @@
-import { umask } from 'process';
+import bcrypt from 'bcrypt';
 import pool from '../config/dbConfig';
 
 export interface User {
@@ -22,6 +22,11 @@ export async function createUser(user: User): Promise<number> {
   `;
 
   try {
+    // 비밀번호 해쉬화
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(user.password, saltRounds);
+    user.password = hashedPassword;
+
     const [result] = await pool.query(createUserQuery, [
       user.email,
       user.password,
@@ -37,6 +42,12 @@ export async function createUser(user: User): Promise<number> {
   }
 }
 
+// 이메일 중복검사
+export async function checkEmail(email: string): Promise<boolean> {
+  const allUsers = await getAllUser();
+  return allUsers.some((user) => user.email === email);
+}
+
 // 로그인 정보 확인
 export async function authenticateUser(
   email: string,
@@ -48,7 +59,13 @@ export async function authenticateUser(
       [email, password]
     );
     if (Array.isArray(user) && user.length > 0) {
-      return user[0] as User;
+      const storedPassword = user[0].password;
+      // 해시 검증
+      const passwordMatch = await bcrypt.compare(password, storedPassword);
+
+      if (passwordMatch) {
+        return user[0] as User;
+      }
     }
     return null;
   } catch (error) {
@@ -115,7 +132,6 @@ export async function updateUserById(
     WHERE userId = ?;
   `;
 
-  console.log(values);
   try {
     await pool.query(updateUserQuery, values);
   } catch (error) {

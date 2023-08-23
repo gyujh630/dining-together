@@ -26,7 +26,7 @@ export const generateAuthToken = (user: DecodedToken): string => {
   const token = jwt.sign(
     user,
     process.env.JWT_SECRET as Secret,
-    { expiresIn: '6h' } // 토큰 만료 시간 설정
+    { expiresIn: '6h' } // 토큰 만료 시간
   );
   return token;
 };
@@ -42,7 +42,7 @@ export const verifyToken = (
       process.env.JWT_SECRET as Secret
     ) as DecodedToken;
 
-    // 토큰이 무효화된 경우
+    // 로그아웃된 경우
     if (revokedTokens.has(req.headers.authorization as string)) {
       return res.status(401).json({
         code: 401,
