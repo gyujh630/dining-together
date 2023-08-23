@@ -95,7 +95,7 @@ export const createStore = async (
 export const getAllStores = async (): Promise<Store[]> => {
   try {
     const query = `
-      SELECT * FROM STORE;
+      SELECT * FROM STORE WHERE isDeleted = 0;
     `;
     const [rows] = await pool.query(query);
     return rows as Store[];
@@ -109,7 +109,7 @@ export const getAllStores = async (): Promise<Store[]> => {
 export const getStoreById = async (storeId: number): Promise<Store | null> => {
   try {
     const query = `
-      SELECT * FROM STORE WHERE storeId = ?;
+      SELECT * FROM STORE WHERE storeId = ? AND isDeleted = 0;
     `;
     const [rows] = await pool.query(query, [storeId]);
     if (Array.isArray(rows) && rows.length > 0) {
@@ -158,22 +158,7 @@ export const updateStore = async (
   }
 };
 
-// 가게 삭제(소프트)
-export const softDeleteStore = async (storeId: number): Promise<void> => {
-  try {
-    const query = `
-      UPDATE STORE
-      SET isDeleted = 1
-      WHERE storeId = ?;
-    `;
-    await pool.query(query, [storeId]);
-  } catch (error) {
-    console.error(error);
-    throw new Error('Failed to soft delete store');
-  }
-};
-
-// 가게 삭제(하드)
+// 가게 삭제
 export const deleteStore = async (storeId: number): Promise<void> => {
   try {
     const query = `

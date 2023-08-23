@@ -12,7 +12,7 @@ app.use(express.json());
 
 app.use('/api/user', userRouter);
 app.use('/api/stores', storeRouter);
-//app.use('/api/place', placeRouter);
+app.use('/api/place', placeRouter);
 
 app.listen(port, function () {
   console.log(`App is listening on port ${port} !`);
