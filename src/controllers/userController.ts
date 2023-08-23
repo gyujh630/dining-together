@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { generateAuthToken } from '../utils/jwt-util';
 import { User } from '../models/userModel';
 import {
   createUser,
@@ -6,9 +7,10 @@ import {
   getAllUser,
   updateUserById,
   deleteUserById,
+  authenticateUser,
 } from '../models/userModel';
 
-// 회원 생성
+// 회원가입
 export async function createUserHandler(
   req: Request,
   res: Response
@@ -21,6 +23,20 @@ export async function createUserHandler(
   } catch (error: any) {
     res.status(500).send(`Error: ${error.message}`);
   }
+}
+
+// 로그인
+export async function login(req: Request, res: Response): Promise<void> {
+  try {
+    const { email, password } = req.body; //로그인 시 입력된 정보
+    // 사용자 확인 로직
+    const user = await authenticateUser(email, password);
+    if (user) {
+      const token = generateAuthToken(user);
+    } else {
+      res.status(401).json({ message: 'No Matching User' }); //일치하는 사용자 정보 없음
+    }
+  } catch (error: any) {}
 }
 
 // 회원 조회

@@ -1,3 +1,4 @@
+import { umask } from 'process';
 import pool from '../config/dbConfig';
 
 export interface User {
@@ -13,7 +14,7 @@ export interface User {
   isDeleted: boolean;
 }
 
-// 회원 생성
+// 회원가입
 export async function createUser(user: User): Promise<number> {
   const createUserQuery = `
     INSERT INTO USER (email, password, name, phoneNum, userType)
@@ -36,6 +37,26 @@ export async function createUser(user: User): Promise<number> {
   }
 }
 
+// 로그인 정보 확인
+export async function authenticateUser(
+  email: string,
+  password: string
+): Promise<User | null> {
+  try {
+    const [user]: any = await pool.query(
+      'SELECT * FROM USER WHERE email = ? AND password = ?',
+      [email, password]
+    );
+    if (Array.isArray(user) && user.length > 0) {
+      return user[0] as User;
+    }
+    return null;
+  } catch (error) {
+    console.log(error);
+    throw new Error('Error Authenticating User');
+  }
+}
+
 // 회원 조회
 export async function getUserById(userId: number): Promise<User | null> {
   const getUserQuery = `
@@ -43,7 +64,7 @@ export async function getUserById(userId: number): Promise<User | null> {
   `;
 
   try {
-    const [rows]: any[] = await pool.query(getUserQuery, [userId]);
+    const [rows]: any = await pool.query(getUserQuery, [userId]);
     if (Array.isArray(rows) && rows.length > 0) {
       return rows[0] as User;
     }
