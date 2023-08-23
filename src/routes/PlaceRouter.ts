@@ -9,7 +9,7 @@ import {
 
 const placeRouter = express.Router();
 
-placeRouter.post('/:storeId', createPlaceHandler);
+placeRouter.post('/', createPlaceHandler);
 placeRouter.get('/:storeId', getAllPlacesHandler);
 placeRouter.get('/:storeId/:placeId', getPlaceHandler);
 placeRouter.put('/:storeId/:placeId', updatePlaceHandler);

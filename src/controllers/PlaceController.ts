@@ -5,6 +5,7 @@ import {
   getPlaceByStoreId,
   getPlaceByStorePlaceId,
   updatePlace,
+  upload,
 } from '../models/PlaceModel';
 
 // 특정 가게의 공간 추가
@@ -14,8 +15,22 @@ export const createPlaceHandler = async (
 ): Promise<void> => {
   try {
     const newPlace: Place = req.body;
-    const placeId = await createPlace(newPlace);
-    res.status(201).json({ placeId });
+    console.log(newPlace);
+    // 이미지 업로드 처리
+    upload.single('placeImage')(req, res, async (err) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).json({ error: 'Failed to upload image' });
+      }
+
+      if (req.file) {
+        // 이미지 업로드 성공한 경우
+        newPlace.placeImage = req.file.path; // 이미지 파일 경로 저장
+      }
+      console.log(newPlace.placeImage);
+      const placeId = await createPlace(newPlace);
+      res.status(201).json({ placeId });
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Failed to create place' });
