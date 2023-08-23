@@ -80,8 +80,8 @@ export const createStore = async (
 
     const query = `
       INSERT INTO STORE
-        (userId, storeName, storeContact, address, description, operatingHours, closedDays, foodCategory, maxNum, cost, isParking, createdAt, modifiedAt)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+        (userId, storeName, storeContact, address, location, description, operatingHours, closedDays, foodCategory, maxNum, cost, isParking, createdAt, modifiedAt)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
     `;
 
     const values = [
