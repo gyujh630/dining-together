@@ -16,4 +16,4 @@ userRouter.get('/:userId', getUserHandler);
 userRouter.put('/:userId', updateUserHandler);
 userRouter.delete('/:userId', deleteUserHandler);
 
-export default userRouter;
+export { userRouter };

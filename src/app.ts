@@ -1,5 +1,5 @@
 import express, { Application, Request, Response } from 'express';
-import { storeRouter, placeRouter } from './routes/index';
+import { userRouter, storeRouter, placeRouter } from './routes/index';
 
 const app: Application = express();
 const port = 3000;
@@ -10,6 +10,7 @@ app.get('/', async (req: Request, res: Response) => {
 
 app.use(express.json());
 
+app.use('/api/user', userRouter);
 app.use('/api/stores', storeRouter);
 //app.use('/api/place', placeRouter);
 
