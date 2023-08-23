@@ -74,22 +74,29 @@ export async function updateUserById(
   userId: number,
   updatedUser: User
 ): Promise<void> {
+  const updateFields = Object.entries(updatedUser)
+    .filter(([key, value]) => value !== undefined)
+    .map(([key]) => `${key} = ?`)
+    .join(', ');
+
+  if (!updateFields) {
+    throw new Error('No fields to update');
+  }
+
+  const values = Object.values(updatedUser).filter(
+    (value) => value !== undefined
+  );
+  values.push(userId);
+
   const updateUserQuery = `
     UPDATE USER
-    SET email = ?, password = ?, name = ?, phoneNum = ?, userType = ?, isDeleted = ?
-    WHERE userId = ?
+    SET ${updateFields}
+    WHERE userId = ?;
   `;
 
+  console.log(values);
   try {
-    await pool.query(updateUserQuery, [
-      updatedUser.email,
-      updatedUser.password,
-      updatedUser.name,
-      updatedUser.phoneNum,
-      updatedUser.userType,
-      updatedUser.isDeleted,
-      userId,
-    ]);
+    await pool.query(updateUserQuery, values);
   } catch (error) {
     console.log(error);
     throw new Error('Error updating user');

@@ -10,7 +10,7 @@ import {
 
 const userRouter = express.Router();
 
-userRouter.post('/', createUserHandler);
+userRouter.post('/signup', createUserHandler);
 userRouter.get('/', getAllUserHandler);
 userRouter.get('/:userId', getUserHandler);
 userRouter.put('/:userId', updateUserHandler);

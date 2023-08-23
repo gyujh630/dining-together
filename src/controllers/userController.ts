@@ -13,10 +13,11 @@ export async function createUserHandler(
   req: Request,
   res: Response
 ): Promise<void> {
+  console.log(req.body);
   try {
     const newUser: User = req.body;
     const createdUserId = await createUser(newUser);
-    res.status(201).json({ createdUserId });
+    res.status(201).json({ createdUserId }); //+ token
   } catch (error: any) {
     res.status(500).send(`Error: ${error.message}`);
   }
@@ -60,7 +61,12 @@ export async function updateUserHandler(
 ): Promise<void> {
   try {
     const userId: number = parseInt(req.params.userId, 10);
+    const user = await getUserById(userId);
     const updatedUser: User = req.body;
+    if (!user) {
+      res.status(404).send('User not found');
+      return;
+    }
     await updateUserById(userId, updatedUser);
     res.send('User updated successfully');
   } catch (error: any) {
