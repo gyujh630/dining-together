@@ -9,6 +9,8 @@ app.get('/', async (req: Request, res: Response) => {
   res.send('Hello express');
 });
 
+app.use(express.json());
+
 app.use('/api/stores', storeRouter);
 app.use('/api/place', placeRouter);
 

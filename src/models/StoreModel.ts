@@ -1,17 +1,25 @@
 import pool from '../config/dbConfig';
+import multer from 'multer';
+import path from 'path';
+import { Request } from 'express';
 
+// UTC 시간을 한국 시간으로 변환하는 함수
+function convertUtcToKoreaTime(utcDate: Date): Date {
+  const koreaOffset = 9 * 60 * 60 * 1000; // 한국 : UTC+9
+  const koreaTime = new Date(utcDate.getTime() + koreaOffset);
+  return koreaTime;
+}
 export interface Store {
   storeId?: number; // 자동 생성
   userId: number;
   storeName: string;
-  storeImageUrl: string;
   storeContact: string;
   address: {
-    province: string; // 도 (경기도)
-    city: string; // 시/군/구 (성남시)
-    street: string; // 도로명 (분당구 미금일로 74번길 15)
-    postalCode: string; // 우편번호 (13627)
+    postalCode: string; // 우편번호 (12345)
+    roadAddress: string; // 도로명주소 (경기도 성남시 분당구 미금일로 74번길 15)
+    detailAddress: string; // 상세주소 (205호)
   };
+  location: string; // 필터용 지역
   description: string;
   operatingHours: string;
   closedDays: string;
@@ -24,20 +32,61 @@ export interface Store {
   averageRating: number;
   reviewCount: number;
   isDeleted: boolean;
+  storeImage: number[]; // STOREIMAGE 테이블의 imageId 배열
 }
 
+// 파일 저장 경로 설정
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'uploads/');
+  },
+  filename: (req, file, cb) => {
+    const extname = path.extname(file.originalname);
+    const filename = `${Date.now()}_${Math.floor(
+      Math.random() * 10000
+    )}${extname}`;
+    cb(null, filename);
+  },
+});
+
+// 파일 업로드 설정
+const upload = multer({ storage: storage });
+
 // 가게 추가
-export const createStore = async (store: Store): Promise<number> => {
+export const createStore = async (
+  store: Store,
+  req: Request
+): Promise<number> => {
   try {
+    // 업로드된 파일 처리
+    const files = req.files as Express.Multer.File[];
+    /*
+    // STOREIMAGE 테이블에 이미지 추가 후 imageId 배열 생성
+    const imagePromises = files.map(async (file) => {
+      const imageUrl = `/uploads/${file.filename}`;
+      const insertImageQuery = `
+        INSERT INTO STOREIMAGE (imageUrl) VALUES (?);
+      `;
+      const [result] = await pool.query(insertImageQuery, [imageUrl]);
+      return (result as any).insertId;
+    });
+
+    const imageIds = await Promise.all(imagePromises);
+*/
+
+    const nowUtc = new Date();
+    const koreaCreatedAt = convertUtcToKoreaTime(nowUtc);
+    const koreaModifiedAt = koreaCreatedAt;
+
     const query = `
       INSERT INTO STORE
-        (userId, storeName, storeImageUrl, storeContact, address, description, operatingHours, closedDays, foodCategory, maxNum, cost, isParking)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+        (userId, storeName, storeContact, address, description, operatingHours, closedDays, foodCategory, maxNum, cost, isParking, createdAt, modifiedAt)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
     `;
+
     const values = [
       store.userId,
       store.storeName,
-      store.storeImageUrl,
       store.storeContact,
       JSON.stringify(store.address),
       store.description,
@@ -47,6 +96,9 @@ export const createStore = async (store: Store): Promise<number> => {
       store.maxNum,
       store.cost,
       store.isParking,
+      koreaCreatedAt,
+      koreaModifiedAt,
+      //   JSON.stringify(imageIds),
     ];
     const [result] = await pool.query(query, values);
     return (result as any).insertId as number;
@@ -93,6 +145,9 @@ export const updateStore = async (
   updatedStore: Store
 ): Promise<void> => {
   try {
+    const nowUtc = new Date();
+    const koreaModifiedAt = convertUtcToKoreaTime(nowUtc);
+
     const updateFields = Object.entries(updatedStore)
       .filter(([key, value]) => value !== undefined && key !== 'storeId')
       .map(([key]) => `${key} = ?`)
@@ -104,7 +159,7 @@ export const updateStore = async (
 
     const updateStoreQuery = `
       UPDATE STORE
-      SET ${updateFields}
+      SET ${updateFields}, modifiedAt = ?
       WHERE storeId = ?;
     `;
 
@@ -112,7 +167,7 @@ export const updateStore = async (
       .filter(([key, value]) => value !== undefined && key !== 'storeId')
       .map(([key, value]) => value);
 
-    values.push(storeId);
+    values.push(koreaModifiedAt, storeId);
     await pool.query(updateStoreQuery, values);
   } catch (error) {
     console.error(error);
@@ -135,8 +190,7 @@ export const softDeleteStore = async (storeId: number): Promise<void> => {
   }
 };
 
-// 가게 삭제
-/*
+// 가게 삭제(하드)
 export const deleteStore = async (storeId: number): Promise<void> => {
   try {
     const query = `
@@ -148,5 +202,5 @@ export const deleteStore = async (storeId: number): Promise<void> => {
     throw new Error('Failed to delete store');
   }
 };
-*/
+
 export default Store;

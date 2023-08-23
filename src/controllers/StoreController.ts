@@ -6,6 +6,7 @@ import {
   getStoreById,
   updateStore,
   softDeleteStore,
+  deleteStore,
 } from '../models/StoreModel';
 
 // 가게 추가
@@ -15,7 +16,7 @@ export const createStoreHandler = async (
 ): Promise<void> => {
   try {
     const newStore: Store = req.body;
-    const storeId = await createStore(newStore);
+    const storeId = await createStore(newStore, req);
     res.status(201).json({ storeId });
   } catch (error) {
     console.error(error);
@@ -80,6 +81,21 @@ export const softDeleteStoreHandler = async (
   try {
     const storeId = parseInt(req.params.storeId, 10);
     await softDeleteStore(storeId);
+    res.status(200).json({ message: 'Store deleted successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to delete store' });
+  }
+};
+
+// 가게 삭제(하드)
+export const deleteStoreHandler = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const storeId = parseInt(req.params.storeId, 10);
+    await deleteStore(storeId);
     res.status(200).json({ message: 'Store deleted successfully' });
   } catch (error) {
     console.error(error);

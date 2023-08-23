@@ -5,6 +5,7 @@ import {
   getStoreHandler,
   updateStoreHandler,
   softDeleteStoreHandler,
+  deleteStoreHandler,
 } from '../controllers/StoreController';
 
 const storeRouter = express.Router();
@@ -23,5 +24,8 @@ storeRouter.put('/:storeId', updateStoreHandler);
 
 // 가게 삭제(소프트)
 storeRouter.put('/:storeId', softDeleteStoreHandler);
+
+// 가게 삭제(하드)
+storeRouter.delete('/:storeId', deleteStoreHandler);
 
 export { storeRouter };
