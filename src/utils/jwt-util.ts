@@ -14,6 +14,14 @@ declare global {
   }
 }
 
+// 무효화된 토큰 목록
+const revokedTokens = new Set<string>();
+
+// 토큰을 무효화하는 함수
+export const revokeToken = (token: string) => {
+  revokedTokens.add(token);
+};
+
 export const generateAuthToken = (user: DecodedToken): string => {
   const token = jwt.sign(
     user,
@@ -33,6 +41,15 @@ export const verifyToken = (
       req.headers.authorization as string,
       process.env.JWT_SECRET as Secret
     ) as DecodedToken;
+
+    // 토큰이 무효화된 경우
+    if (revokedTokens.has(req.headers.authorization as string)) {
+      return res.status(401).json({
+        code: 401,
+        message: '무효화된 토큰입니다.',
+      });
+    }
+
     req.decoded = decoded;
     return next();
   } catch (error: any) {

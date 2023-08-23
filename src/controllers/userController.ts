@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { generateAuthToken } from '../utils/jwt-util';
+import { generateAuthToken, revokeToken } from '../utils/jwt-util';
 import { User } from '../models/userModel';
 import {
   createUser,
@@ -31,12 +31,25 @@ export async function login(req: Request, res: Response): Promise<void> {
     const { email, password } = req.body; //로그인 시 입력된 정보
     // 사용자 확인 로직
     const user = await authenticateUser(email, password);
-    if (user) {
+    if (user && !user.isDeleted) {
+      //해당 계정이 존재하고, 삭제계정이 아닌 경우 token 발급
       const token = generateAuthToken(user);
+      res.status(200).json({ token }); // 토큰을 응답으로
     } else {
       res.status(401).json({ message: 'No Matching User' }); //일치하는 사용자 정보 없음
     }
-  } catch (error: any) {}
+  } catch (error: any) {
+    res.status(500).send(`Error: ${error.message}`);
+  }
+}
+
+export async function logout(req: Request, res: Response): Promise<void> {
+  try {
+    revokeToken(req.headers.authorization as string); //토큰 무효화
+    res.status(200).json({ message: '로그아웃이 완료되었습니다.' });
+  } catch (error: any) {
+    res.status(500).send(`Error: ${error.message}`);
+  }
 }
 
 // 회원 조회
