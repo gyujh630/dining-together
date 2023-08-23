@@ -6,7 +6,7 @@ import {
   getUserById,
   getAllUser,
   updateUserById,
-  deleteUserById,
+  // deleteUserById,
   authenticateUser,
 } from '../models/userModel';
 
@@ -26,7 +26,7 @@ export async function createUserHandler(
 }
 
 // 로그인
-export async function login(req: Request, res: Response): Promise<void> {
+export async function logInHandler(req: Request, res: Response): Promise<void> {
   try {
     const { email, password } = req.body; //로그인 시 입력된 정보
     // 사용자 확인 로직
@@ -43,7 +43,10 @@ export async function login(req: Request, res: Response): Promise<void> {
   }
 }
 
-export async function logout(req: Request, res: Response): Promise<void> {
+export async function logOutHandler(
+  req: Request,
+  res: Response
+): Promise<void> {
   try {
     revokeToken(req.headers.authorization as string); //토큰 무효화
     res.status(200).json({ message: '로그아웃이 완료되었습니다.' });
@@ -103,6 +106,7 @@ export async function updateUserHandler(
   }
 }
 
+/*
 // 회원 삭제
 export async function deleteUserHandler(
   req: Request,
@@ -116,3 +120,4 @@ export async function deleteUserHandler(
     res.status(500).send(`Error: ${error.message}`);
   }
 }
+*/

@@ -124,6 +124,7 @@ export async function updateUserById(
   }
 }
 
+/*
 // 회원 삭제
 export async function deleteUserById(userId: number): Promise<void> {
   const deleteUserQuery = `
@@ -137,3 +138,4 @@ export async function deleteUserById(userId: number): Promise<void> {
     throw new Error('Error deleting user');
   }
 }
+*/
