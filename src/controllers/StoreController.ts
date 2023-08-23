@@ -5,9 +5,10 @@ import {
   getAllStores,
   getStoreById,
   updateStore,
-  deleteStore,
+  softDeleteStore,
 } from '../models/StoreModel';
 
+// 가게 추가
 export const createStoreHandler = async (
   req: Request,
   res: Response
@@ -22,6 +23,7 @@ export const createStoreHandler = async (
   }
 };
 
+// 가게 전체 조회
 export const getAllStoresHandler = async (
   req: Request,
   res: Response
@@ -35,6 +37,7 @@ export const getAllStoresHandler = async (
   }
 };
 
+// 특정 가게 조회
 export const getStoreHandler = async (
   req: Request,
   res: Response
@@ -53,6 +56,7 @@ export const getStoreHandler = async (
   }
 };
 
+// 가게 정보 수정
 export const updateStoreHandler = async (
   req: Request,
   res: Response
@@ -68,13 +72,14 @@ export const updateStoreHandler = async (
   }
 };
 
-export const deleteStoreHandler = async (
+// 가게 삭제(소프트)
+export const softDeleteStoreHandler = async (
   req: Request,
   res: Response
 ): Promise<void> => {
   try {
     const storeId = parseInt(req.params.storeId, 10);
-    await deleteStore(storeId);
+    await softDeleteStore(storeId);
     res.status(200).json({ message: 'Store deleted successfully' });
   } catch (error) {
     console.error(error);

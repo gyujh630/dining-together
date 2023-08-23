@@ -26,6 +26,7 @@ export interface Store {
   isDeleted: boolean;
 }
 
+// 가게 추가
 export const createStore = async (store: Store): Promise<number> => {
   try {
     const query = `
@@ -55,6 +56,7 @@ export const createStore = async (store: Store): Promise<number> => {
   }
 };
 
+// 가게 전체 조회
 export const getAllStores = async (): Promise<Store[]> => {
   try {
     const query = `
@@ -68,6 +70,7 @@ export const getAllStores = async (): Promise<Store[]> => {
   }
 };
 
+// 특정 가게 조회
 export const getStoreById = async (storeId: number): Promise<Store | null> => {
   try {
     const query = `
@@ -84,44 +87,56 @@ export const getStoreById = async (storeId: number): Promise<Store | null> => {
   }
 };
 
+// 가게 정보 수정
 export const updateStore = async (
   storeId: number,
   updatedStore: Store
 ): Promise<void> => {
   try {
-    const query = `
+    const updateFields = Object.entries(updatedStore)
+      .filter(([key, value]) => value !== undefined && key !== 'storeId')
+      .map(([key]) => `${key} = ?`)
+      .join(', ');
+
+    if (!updateFields) {
+      throw new Error('No fields to update');
+    }
+
+    const updateStoreQuery = `
       UPDATE STORE
-      SET
-        userId = ?, storeName = ?, storeImageUrl = ?, storeContact = ?, address = ?, description = ?,
-        operatingHours = ?, closedDays = ?, foodCategory = ?, maxNum = ?, cost = ?, isParking = ?,
-        averageRating = ?, reviewCount = ?, isDeleted = ?
+      SET ${updateFields}
       WHERE storeId = ?;
     `;
-    const values = [
-      updatedStore.userId,
-      updatedStore.storeName,
-      updatedStore.storeImageUrl,
-      updatedStore.storeContact,
-      JSON.stringify(updatedStore.address),
-      updatedStore.description,
-      updatedStore.operatingHours,
-      updatedStore.closedDays,
-      updatedStore.foodCategory,
-      updatedStore.maxNum,
-      updatedStore.cost,
-      updatedStore.isParking,
-      updatedStore.averageRating,
-      updatedStore.reviewCount,
-      updatedStore.isDeleted,
-      storeId,
-    ];
-    await pool.query(query, values);
+
+    const values = Object.entries(updatedStore)
+      .filter(([key, value]) => value !== undefined && key !== 'storeId')
+      .map(([key, value]) => value);
+
+    values.push(storeId);
+    await pool.query(updateStoreQuery, values);
   } catch (error) {
     console.error(error);
     throw new Error('Failed to update store');
   }
 };
 
+// 가게 삭제(소프트)
+export const softDeleteStore = async (storeId: number): Promise<void> => {
+  try {
+    const query = `
+      UPDATE STORE
+      SET isDeleted = 1
+      WHERE storeId = ?;
+    `;
+    await pool.query(query, [storeId]);
+  } catch (error) {
+    console.error(error);
+    throw new Error('Failed to soft delete store');
+  }
+};
+
+// 가게 삭제
+/*
 export const deleteStore = async (storeId: number): Promise<void> => {
   try {
     const query = `
@@ -133,5 +148,5 @@ export const deleteStore = async (storeId: number): Promise<void> => {
     throw new Error('Failed to delete store');
   }
 };
-
+*/
 export default Store;
