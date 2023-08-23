@@ -15,4 +15,4 @@ storeRouter.get('/:storeId', getStoreHandler);
 storeRouter.put('/:storeId', updateStoreHandler);
 storeRouter.delete('/:storeId', deleteStoreHandler);
 
-export default storeRouter;
+export { storeRouter };

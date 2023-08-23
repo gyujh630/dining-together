@@ -6,7 +6,12 @@ export interface Store {
   storeName: string;
   storeImageUrl: string;
   storeContact: string;
-  address: object;
+  address: {
+    province: string; // 도 (경기도)
+    city: string; // 시/군/구 (성남시)
+    street: string; // 도로명 (분당구 미금일로 74번길 15)
+    postalCode: string; // 우편번호 (13627)
+  };
   description: string;
   operatingHours: string;
   closedDays: string;
@@ -25,8 +30,8 @@ export const createStore = async (store: Store): Promise<number> => {
   try {
     const query = `
       INSERT INTO STORE
-        (userId, storeName, storeImageUrl, storeContact, address, description, operatingHours, closedDays, foodCategory, maxNum, cost, isParking, averageRating, reviewCount, isDeleted)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+        (userId, storeName, storeImageUrl, storeContact, address, description, operatingHours, closedDays, foodCategory, maxNum, cost, isParking)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
     `;
     const values = [
       store.userId,
@@ -41,9 +46,6 @@ export const createStore = async (store: Store): Promise<number> => {
       store.maxNum,
       store.cost,
       store.isParking,
-      store.averageRating,
-      store.reviewCount,
-      store.isDeleted,
     ];
     const [result] = await pool.query(query, values);
     return (result as any).insertId as number;
