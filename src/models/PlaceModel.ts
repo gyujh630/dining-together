@@ -141,8 +141,8 @@ export const updatePlace = async (
   }
 };
 
-// 예약하기 - 예약 가능 공간 조회
-export async function findAvailablePlaces(
+// 예약 가능 공간 조회
+export async function findAvailablePlacesByDate(
   storeId: number,
   date: string,
   people: number
@@ -160,8 +160,10 @@ export async function findAvailablePlaces(
         SELECT r.placeId
         FROM RESERVATION r
         WHERE r.reservedDate = ?
+        AND (r.status != '예약취소')
       )
     `;
+
     // AND p.maxPeople >= ?
     // AND p.minPeople <= ?
     const [rows] = await pool.query(query, [storeId, date]);

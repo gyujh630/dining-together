@@ -8,10 +8,13 @@ import {
   getReservationsByStoreId,
   getAllReservations,
   getReservationById,
+  isAvailableReservation,
 } from '../models/ReservationModel';
 import { getStoreById, getUserById } from '../models';
-import Place, { getPlaceByPlaceId } from '../models/PlaceModel';
-import { findAvailablePlaces } from '../models/PlaceModel';
+import {
+  getPlaceByPlaceId,
+  findAvailablePlacesByDate,
+} from '../models/PlaceModel';
 
 // 예약 가능 공간 조회
 export async function getAvailablePlacesHandler(
@@ -20,7 +23,6 @@ export async function getAvailablePlacesHandler(
 ): Promise<void> {
   try {
     const { storeId, date, people } = req.query;
-    console.log(storeId);
     const parsedStoreId = parseInt(storeId as string, 10);
     const parsedPeople = parseInt(people as string, 10);
 
@@ -30,7 +32,7 @@ export async function getAvailablePlacesHandler(
     } else if (parsedPeople > store.maxNum || parsedPeople <= 0) {
       res.status(400).json({ error: 'invalid data' });
     } else {
-      const availablePlaces = await findAvailablePlaces(
+      const availablePlaces = await findAvailablePlacesByDate(
         parsedStoreId,
         date as string,
         parsedPeople
@@ -53,7 +55,7 @@ export async function createReservationHandler(
     WHERE placeId = ?
   `;
   try {
-    const { userId, placeId, people } = req.body;
+    const { userId, placeId, people, reservedDate } = req.body;
     const user = await getUserById(userId);
     const place = await getPlaceByPlaceId(placeId);
     const [storeResult]: any = await pool.query(findStoreIdQuery, [placeId]); // placeId를 사용하여 storeId를 찾기
@@ -72,14 +74,22 @@ export async function createReservationHandler(
         people < place.minPeople
       ) {
         res.status(400).send('인원수가 유효하지 않습니다.');
-      } else {
-        const newReservation: Reservation = {
-          ...req.body, // 기존 필드 유지
-          storeId: store.storeId, // storeId 추가
-        };
-        const reservedId = await createReservation(newReservation);
-        res.status(201).json({ reservedId });
+        return;
       }
+      const available = await isAvailableReservation(placeId, reservedDate);
+
+      if (!available) {
+        res.status(409).send('이미 예약되어 있는 공간입니다.');
+        return;
+      }
+
+      // 예약 생성
+      const newReservation: Reservation = {
+        ...req.body, // 기존 필드 유지
+        storeId: store.storeId, // storeId 추가
+      };
+      const reservedId = await createReservation(newReservation);
+      res.status(201).json({ reservedId });
     }
   } catch (error: any) {
     res.status(500).json({ error: 'Failed to create reservation' });

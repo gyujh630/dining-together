@@ -145,3 +145,30 @@ export async function updateReservationById(
     throw new Error('Error updating reservation');
   }
 }
+
+// 예약 가능여부 확인
+export async function isAvailableReservation(
+  placeId: number,
+  date: string
+): Promise<boolean> {
+  try {
+    const query = `
+      SELECT COUNT(*) AS reservationCount
+      FROM RESERVATION
+      WHERE placeId = ? AND reservedDate = ? AND (status <> '예약취소');
+    `;
+
+    const [rows]: any = await pool.query(query, [placeId, date]);
+
+    const reservationCount = rows[0].reservationCount;
+
+    if (reservationCount === 0) {
+      return true;
+    } else {
+      return false;
+    }
+  } catch (error) {
+    console.error(error);
+    throw new Error('Error checking available reservation');
+  }
+}
