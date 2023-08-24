@@ -26,9 +26,9 @@ storeRouter.put('/:storeId', upload.single('storeImage'), updateStoreHandler);
 // PLACE
 storeRouter.post('/places', upload.single('placeImage'), createPlaceHandler);
 storeRouter.get('/:storeId/places', getAllPlacesHandler);
-storeRouter.get('/:storeId/places/:placeId', getPlaceHandler);
+storeRouter.get('/places/:placeId', getPlaceHandler);
 storeRouter.put(
-  '/:storeId/places/:placeId',
+  '/places/:placeId',
   upload.single('placeImage'),
   updatePlaceHandler
 );

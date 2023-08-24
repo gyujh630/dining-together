@@ -72,7 +72,7 @@ export const createPlace = async (place: Place): Promise<number> => {
 };
 
 // 특정 가게의 공간 전체 조회
-export const getPlaceByStoreId = async (storeId: number): Promise<Place[]> => {
+export const getPlacesByStoreId = async (storeId: number): Promise<Place[]> => {
   try {
     const query = `
         SELECT * FROM PLACE WHERE storeId = ?;
@@ -86,15 +86,14 @@ export const getPlaceByStoreId = async (storeId: number): Promise<Place[]> => {
 };
 
 // 특정 가게의 특정 공간 조회
-export const getPlaceByStorePlaceId = async (
-  storeId: number,
+export const getPlaceByPlaceId = async (
   placeId: number
 ): Promise<Place | null> => {
   try {
     const query = `
-        SELECT * FROM PLACE WHERE storeId = ? AND placeId = ?;
+        SELECT * FROM PLACE WHERE placeId = ?;
       `;
-    const [rows] = await pool.query(query, [storeId, placeId]);
+    const [rows] = await pool.query(query, placeId);
     if (Array.isArray(rows) && rows.length > 0) {
       return rows[0] as Place;
     }
@@ -107,7 +106,6 @@ export const getPlaceByStorePlaceId = async (
 
 // 특정 가게의 특정 공간 정보 수정
 export const updatePlace = async (
-  storeId: number,
   placeId: number,
   updatedPlace: Place
 ): Promise<void> => {
@@ -116,10 +114,7 @@ export const updatePlace = async (
     const koreaModifiedAt = convertUtcToKoreaTime(nowUtc);
 
     let updateFields = Object.entries(updatedPlace)
-      .filter(
-        ([key, value]) =>
-          value !== undefined && key !== 'storeId' && key !== 'placeId'
-      )
+      .filter(([key, value]) => value !== undefined && key !== 'placeId')
       .map(([key]) => `${key} = ?`)
       .join(', ');
 
@@ -127,22 +122,18 @@ export const updatePlace = async (
       throw new Error('No fields to update');
     }
 
+    const values = Object.entries(updatedPlace)
+      .filter(([key, value]) => value !== undefined && key !== 'placeId')
+      .map(([key, value]) => value);
+
+    values.push(koreaModifiedAt, placeId);
+
     const updatePlaceQuery = `
       UPDATE PLACE
       SET ${updateFields}, modifiedAt = ?
-      WHERE storeId = ? AND placeId = ?;
+      WHERE placeId = ?;
     `;
 
-    const values = Object.entries(updatedPlace)
-      .filter(([key, value]) => value !== undefined && key !== undefined)
-      .map(([key, value]) => value);
-
-    values.push(...values, koreaModifiedAt, storeId, placeId);
-    // if (updatedPlace.placeImage) {
-    //   values.push(koreaModifiedAt, ...values, storeId, placeId);
-    // } else {
-    //   values.push(koreaModifiedAt, storeId, placeId);
-    // }
     await pool.query(updatePlaceQuery, values);
   } catch (error) {
     console.error(error);

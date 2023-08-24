@@ -3,8 +3,8 @@ import path from 'path';
 import {
   Place,
   createPlace,
-  getPlaceByStoreId,
-  getPlaceByStorePlaceId,
+  getPlacesByStoreId,
+  getPlaceByPlaceId,
   updatePlace,
   upload,
 } from '../models/PlaceModel';
@@ -45,7 +45,7 @@ export const getAllPlacesHandler = async (
 ): Promise<void> => {
   try {
     const storeId = parseInt(req.params.storeId, 10);
-    const place = await getPlaceByStoreId(storeId);
+    const place = await getPlacesByStoreId(storeId);
     if (place) {
       res.status(200).json(place);
     } else {
@@ -63,9 +63,8 @@ export const getPlaceHandler = async (
   res: Response
 ): Promise<void> => {
   try {
-    const storeId = parseInt(req.params.storeId, 10);
     const placeId = parseInt(req.params.placeId, 10);
-    const place = await getPlaceByStorePlaceId(storeId, placeId);
+    const place = await getPlaceByPlaceId(placeId);
     if (place) {
       res.status(200).json(place);
     } else {
@@ -83,7 +82,6 @@ export const updatePlaceHandler = async (
   res: Response
 ): Promise<void> => {
   try {
-    const storeId = parseInt(req.params.storeId, 10);
     const placeId = parseInt(req.params.placeId, 10);
 
     // 새로운 이미지 업로드 처리
@@ -104,11 +102,11 @@ export const updatePlaceHandler = async (
         ); // 이미지 파일 경로 저장
       }
 
-      console.log(updatedPlace);
+      console.log(req.file);
 
-      await updatePlace(storeId, placeId, updatedPlace);
+      await updatePlace(placeId, updatedPlace);
 
-      res.status(200).json({ message: 'Place updated successfully' });
+      res.status(200).json({ updatedPlace });
     });
   } catch (error) {
     console.error(error);
