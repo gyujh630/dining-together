@@ -22,7 +22,10 @@ const storage = multer.diskStorage({
 });
 
 // 파일 업로드 설정
-export const upload = multer({ storage: storage });
+export const upload = multer({
+  storage: storage,
+  limits: { fileSize: 5 * 1024 * 1024 },
+});
 
 export interface Place {
   placeId?: number; // 자동 생성
