@@ -1,5 +1,6 @@
 import pool from '../config/dbConfig';
 import Place from './PlaceModel';
+import { getStoreById } from './StoreModel';
 export interface Reservation {
   reservedId: number;
   userId: number;
@@ -13,56 +14,25 @@ export interface Reservation {
   status: string;
 }
 
-// // 예약하기 - 예약 가능 공간 조회
-// export async function findAvailablePlaces(
-//   storeId: number,
-//   reservedDate: string,
-//   people: number
-// ): Promise<Place[]> {
-//   try {
-//   } catch (error) {
-//     console.error(error);
-//     throw new Error('Error finding available places');
-//   }
-// }
-
 //예약 생성
 export async function createReservation(
   newReservation: Reservation
 ): Promise<number> {
-  const findStoreIdQuery = `
-    SELECT storeId 
-    FROM PLACE
-    WHERE placeId = ?
-  `;
-
   try {
-    // placeId를 사용하여 storeId를 찾기
-    const [storeResult]: any = await pool.query(findStoreIdQuery, [
-      newReservation.placeId,
-    ]);
-
-    if (storeResult.length === 0) {
-      throw new Error('공간이 등록된 가게가 존재하지 않습니다.');
-    } else if (storeResult[0].isDeleted) {
-      throw new Error('삭제된 가게의 공간입니다.');
-    } else {
-      const storeId = storeResult[0].storeId;
-      const createReservationQuery = `
+    const createReservationQuery = `
       INSERT INTO RESERVATION (userId, storeId, placeId, people, reservedDate, visitTime)
       VALUES (?, ?, ?, ?, ?, ?)
     `;
-      const [result] = await pool.query(createReservationQuery, [
-        newReservation.userId,
-        storeId,
-        newReservation.placeId,
-        newReservation.people,
-        newReservation.reservedDate,
-        newReservation.visitTime,
-      ]);
+    const [result] = await pool.query(createReservationQuery, [
+      newReservation.userId,
+      newReservation.storeId,
+      newReservation.placeId,
+      newReservation.people,
+      newReservation.reservedDate,
+      newReservation.visitTime,
+    ]);
 
-      return (result as any).insertId as number;
-    }
+    return (result as any).insertId as number;
   } catch (error) {
     console.error(error);
     throw new Error('Error creating reservation');
@@ -173,5 +143,32 @@ export async function updateReservationById(
   } catch (error) {
     console.error(error);
     throw new Error('Error updating reservation');
+  }
+}
+
+// 예약 가능여부 확인
+export async function isAvailableReservation(
+  placeId: number,
+  date: string
+): Promise<boolean> {
+  try {
+    const query = `
+      SELECT COUNT(*) AS reservationCount
+      FROM RESERVATION
+      WHERE placeId = ? AND reservedDate = ? AND (status <> '예약취소');
+    `;
+
+    const [rows]: any = await pool.query(query, [placeId, date]);
+
+    const reservationCount = rows[0].reservationCount;
+
+    if (reservationCount === 0) {
+      return true;
+    } else {
+      return false;
+    }
+  } catch (error) {
+    console.error(error);
+    throw new Error('Error checking available reservation');
   }
 }

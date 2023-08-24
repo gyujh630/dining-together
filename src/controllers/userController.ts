@@ -36,8 +36,8 @@ export async function checkEmailHandler(
   res: Response
 ): Promise<void> {
   try {
-    const { email } = req.body as { email: string };
-    const isEmailDuplicate = await checkEmail(email);
+    const { email } = req.query;
+    const isEmailDuplicate = await checkEmail(email as string);
 
     if (isEmailDuplicate) {
       res
