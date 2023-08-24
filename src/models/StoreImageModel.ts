@@ -1,5 +1,4 @@
 import pool from '../config/dbConfig';
-import { Store } from './StoreModel';
 
 export interface StoreImage {
   imageId?: number;

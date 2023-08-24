@@ -16,7 +16,9 @@ const storage = multer.diskStorage({
   },
   filename: (req, file, cb) => {
     const extname = path.extname(file.originalname);
-    const filename = `${Date.now()}${extname}`;
+    const filename = `${Date.now()}_${Math.floor(
+      Math.random() * 10000
+    )}${extname}`;
     cb(null, filename);
   },
 });
@@ -57,7 +59,9 @@ export const createPlace = async (place: Place): Promise<number> => {
       place.storeId,
       place.placeName,
       place.placeType,
-      place.placeImage,
+      `${Date.now()}_${Math.floor(Math.random() * 10000)}${path.extname(
+        place.placeImage
+      )}`,
       place.maxPeople,
       place.minPeople,
       koreaCreatedAt,

@@ -14,8 +14,14 @@ export const createStoreHandler = async (
 ): Promise<void> => {
   try {
     const newStore: Store = req.body;
-    const storeId = await createStore(newStore, req.file?.path);
-    res.status(201).json({ storeId });
+    if (req.files && Array.isArray(req.files)) {
+      const storeImages: string[] = req.files.map(
+        (file: Express.Multer.File) => file.path
+      );
+
+      const storeId = await createStore(newStore, storeImages);
+      res.status(201).json({ storeId });
+    }
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Failed to create store' });

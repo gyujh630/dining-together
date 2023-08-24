@@ -4,21 +4,20 @@ import {
   getAllStoresHandler,
   getStoreHandler,
   updateStoreHandler,
-  // deleteStoreHandler,
 } from '../controllers/StoreController';
 import {
   createPlaceHandler,
   getAllPlacesHandler,
   getPlaceHandler,
   updatePlaceHandler,
-  // deletePlaceHandler,
 } from '../controllers/PlaceController';
+import { getAllImagesHandler } from '../controllers/StoreImageController';
 import { upload } from '../config/uploadConfig';
 import { getReservationsByStoreIdHandler } from '../controllers/ReservationController';
 const storeRouter = express.Router();
 
 // STORE
-storeRouter.post('/', upload.single('storeImage'), createStoreHandler);
+storeRouter.post('/', upload.array('storeImage', 3), createStoreHandler);
 storeRouter.get('/', getAllStoresHandler);
 storeRouter.get('/:storeId', getStoreHandler);
 storeRouter.put('/:storeId', upload.single('storeImage'), updateStoreHandler);
@@ -33,6 +32,8 @@ storeRouter.put(
   upload.single('placeImage'),
   updatePlaceHandler
 );
-// storeRouter.delete('/:storeId', deleteStoreHandler);
+
+// STOREIMAGE
+storeRouter.get('/:storeId/images', getAllImagesHandler);
 
 export { storeRouter };

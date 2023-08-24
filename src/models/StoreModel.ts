@@ -25,6 +25,12 @@ const storage = multer.diskStorage({
   },
 });
 
+// 파일 업로드 설정
+export const upload = multer({
+  storage: storage,
+  limits: { fileSize: 10 * 1024 * 1024 },
+});
+
 export interface Store {
   storeId?: number; // 자동 생성
   userId: number;
@@ -37,6 +43,7 @@ export interface Store {
   };
   location: string; // 필터용 지역
   description: string;
+  keyword: string;
   operatingHours: string;
   closedDays: string;
   foodCategory: string;
@@ -48,13 +55,13 @@ export interface Store {
   averageRating: number;
   reviewCount: number;
   isDeleted: boolean;
-  storeImage: StoreImage[]; // STOREIMAGE 테이블의 imageId 배열
+  // storeImage: StoreImage[]; // STOREIMAGE 테이블의 imageId 배열
 }
 
 // 가게 추가
 export const createStore = async (
   store: Store,
-  imagePath: string | undefined
+  images: string[]
 ): Promise<number> => {
   try {
     const nowUtc = new Date();
@@ -63,8 +70,8 @@ export const createStore = async (
 
     const query = `
       INSERT INTO STORE
-        (userId, storeName, storeContact, address, location, description, operatingHours, closedDays, foodCategory, maxNum, cost, isParking, createdAt, modifiedAt)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+        (userId, storeName, storeContact, address, location, description, keyword, operatingHours, closedDays, foodCategory, maxNum, cost, isParking, createdAt, modifiedAt)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
     `;
 
     const values = [
@@ -74,6 +81,7 @@ export const createStore = async (
       JSON.stringify(store.address),
       store.location,
       store.description,
+      store.keyword,
       store.operatingHours,
       store.closedDays,
       store.foodCategory,
@@ -87,8 +95,11 @@ export const createStore = async (
     const [result] = await pool.query(query, values);
     const storeId = (result as any).insertId as number;
 
-    if (imagePath) {
-      await addImageToStore(storeId, imagePath);
+    for (const imagePath of images) {
+      const randomImagePath = `${Date.now()}_${Math.floor(
+        Math.random() * 10000
+      )}${path.extname(imagePath)}`;
+      await addImageToStore(storeId, randomImagePath);
     }
 
     return storeId;
