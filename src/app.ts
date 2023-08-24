@@ -1,6 +1,10 @@
 import express, { Application, Request, Response } from 'express';
-import { userRouter, storeRouter, homeRouter } from './routes/index';
-import { reservationRouter } from './routes/ReservationRouter';
+import {
+  userRouter,
+  storeRouter,
+  homeRouter,
+  reservationRouter,
+} from './routes/index';
 
 const app: Application = express();
 const port = 3000;
@@ -13,6 +17,7 @@ app.use(express.json());
 
 app.use('/api/user', userRouter);
 app.use('/api/stores', storeRouter);
+app.use('/api/reserve', reservationRouter);
 //app.use('/api/place', placeRouter);
 
 app.listen(port, function () {

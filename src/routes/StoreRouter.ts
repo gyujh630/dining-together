@@ -22,6 +22,7 @@ storeRouter.post('/', upload.single('storeImage'), createStoreHandler);
 storeRouter.get('/', getAllStoresHandler);
 storeRouter.get('/:storeId', getStoreHandler);
 storeRouter.put('/:storeId', upload.single('storeImage'), updateStoreHandler);
+storeRouter.get('/:storeId/reserve', getReservationsByStoreIdHandler);
 
 // PLACE
 storeRouter.post('/places', upload.single('placeImage'), createPlaceHandler);
