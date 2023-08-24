@@ -1,5 +1,4 @@
 import { Request, Response } from 'express';
-import pool from '../config/dbConfig';
 import {
   Reservation,
   createReservation,
@@ -10,7 +9,37 @@ import {
   getReservationById,
 } from '../models/ReservationModel';
 import { getStoreById, getUserById } from '../models';
-import Place, { getPlaceById } from '../models/PlaceModel';
+// import Place, { getPlaceById } from '../models/PlaceModel';
+
+// // 예약하기 - 예약 가능 공간 조회
+// export async function getAvailablePlaces(
+//   req: Request,
+//   res: Response
+// ): Promise<void> {
+//   try {
+//     const { storeId, reservedDate, people } = req.body;
+//     const store = await getStoreById(storeId);
+//     if (!store || store.isDeleted) {
+//       res.status(404).json({ error: 'Store not found' });
+//     } else if (people > store.maxNum || people <= 0) {
+//       res.status(400).json({ error: 'invalid data' });
+//     } else {
+//       const availablePlaces = await findAvailablePlaces(
+//         storeId,
+//         reservedDate,
+//         people
+//       );
+
+//       if (availablePlaces.length === 0) {
+//         res.status(404).json({ error: 'No available places found' });
+//       } else {
+//         res.status(200).json(availablePlaces);
+//       }
+//     }
+//   } catch (error: any) {
+//     res.status(500).json({ error: 'Failed to get available place list' });
+//   }
+// }
 
 // 예약 생성
 export async function createReservationHandler(
@@ -20,13 +49,13 @@ export async function createReservationHandler(
   try {
     const { userId, placeId } = req.body;
     const user = await getUserById(userId);
-    const place = await getPlaceById(placeId);
+    // const place = await getPlaceById(placeId);
 
     if (!user || user.isDeleted) {
       res.status(404).json({ error: 'User not found' });
-    } else if (!place) {
-      //isDeleted 추가해야함.
-      res.status(404).json({ error: 'Place not found' });
+      // } else if (!place) {
+      //   //isDeleted 추가해야함.
+      //   res.status(404).json({ error: 'Place not found' });
     } else {
       const newReservation: Reservation = req.body;
       const reservedId = await createReservation(newReservation);
@@ -112,7 +141,7 @@ export async function updateReservationHandler(
   res: Response
 ): Promise<void> {
   try {
-    const reservedId: number = parseInt(req.params.reservationId, 10);
+    const reservedId: number = parseInt(req.params.reservedId, 10);
     const reserve = await getReservationById(reservedId);
     if (!reserve) {
       res.status(404).json({ error: 'Reservation not found' });
