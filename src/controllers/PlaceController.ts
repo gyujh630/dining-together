@@ -83,15 +83,13 @@ export const updatePlaceHandler = async (
 ): Promise<void> => {
   try {
     const placeId = parseInt(req.params.placeId, 10);
-
+    const updatedPlace: Place = req.body;
     // 새로운 이미지 업로드 처리
     upload.single('newPlaceImage')(req, res, async (err: any) => {
-      // if (err) {
-      //   console.error(err);
-      //   return res.status(500).json({ error: 'Failed to upload image' });
-      // }
-
-      const updatedPlace: Place = req.body;
+      if (err) {
+        console.error(err);
+        return res.status(500).json({ error: 'Failed to upload image' });
+      }
 
       if (req.file) {
         // 이미지 업로드 성공한 경우
