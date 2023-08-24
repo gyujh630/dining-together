@@ -18,7 +18,7 @@ export async function createReservation(
 ): Promise<number> {
   const findStoreIdQuery = `
     SELECT storeId 
-    FROM STORE
+    FROM PLACE
     WHERE placeId = ?
   `;
 
@@ -27,7 +27,6 @@ export async function createReservation(
     const [storeResult]: any = await pool.query(findStoreIdQuery, [
       newReservation.placeId,
     ]);
-    console.log(storeResult);
 
     if (storeResult.length === 0) {
       throw new Error('공간이 등록된 가게가 존재하지 않습니다.');

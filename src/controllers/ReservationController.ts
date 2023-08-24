@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import pool from '../config/dbConfig';
 import {
   Reservation,
   createReservation,
@@ -9,6 +10,7 @@ import {
   getReservationById,
 } from '../models/ReservationModel';
 import { getStoreById, getUserById } from '../models';
+import Place, { getPlaceById } from '../models/PlaceModel';
 
 // 예약 생성
 export async function createReservationHandler(
@@ -16,9 +18,20 @@ export async function createReservationHandler(
   res: Response
 ): Promise<void> {
   try {
-    const newReservation: Reservation = req.body;
-    const reservedId = await createReservation(newReservation);
-    res.status(201).json({ reservedId });
+    const { userId, placeId } = req.body;
+    const user = await getUserById(userId);
+    const place = await getPlaceById(placeId);
+
+    if (!user || user.isDeleted) {
+      res.status(404).json({ error: 'User not found' });
+    } else if (!place) {
+      //isDeleted 추가해야함.
+      res.status(404).json({ error: 'Place not found' });
+    } else {
+      const newReservation: Reservation = req.body;
+      const reservedId = await createReservation(newReservation);
+      res.status(201).json({ reservedId });
+    }
   } catch (error: any) {
     res.status(500).json({ error: 'Failed to create reservation' });
   }
@@ -31,7 +44,7 @@ export async function getReservationByIdHandler(
 ): Promise<void> {
   try {
     const reservedId: number = parseInt(req.params.reservedId, 10);
-    const reservation = await getReservationById(Number(reservedId));
+    const reservation = await getReservationById(reservedId);
     if (reservation) {
       res.status(200).json(reservation);
     } else {
