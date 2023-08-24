@@ -7,9 +7,9 @@ import {
   updateStore,
   deleteStore,
   StoreImage,
-  addImageToStore,
   getImagesByStoreId,
 } from '../models/index';
+import { createImageAndStoreAssociation } from './StoreImageController';
 
 // 가게 추가
 export const createStoreHandler = async (
@@ -18,7 +18,11 @@ export const createStoreHandler = async (
 ): Promise<void> => {
   try {
     const newStore: Store = req.body;
-    const storeId = await createStore(newStore, req);
+    const storeId = await createStore(newStore);
+
+    if (req.file) {
+      await createImageAndStoreAssociation(storeId, req.file.path);
+    }
     res.status(201).json({ storeId });
   } catch (error) {
     console.error(error);

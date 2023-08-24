@@ -52,10 +52,7 @@ export interface Store {
 }
 
 // 가게 추가
-export const createStore = async (
-  store: Store,
-  req: Request
-): Promise<number> => {
+export const createStore = async (store: Store): Promise<number> => {
   try {
     const nowUtc = new Date();
     const koreaCreatedAt = convertUtcToKoreaTime(nowUtc);

@@ -8,15 +8,13 @@ export interface StoreImage {
 }
 
 // 이미지 추가
-export const addImageToStore = async (
-  storeId: number,
-  imageUrl: string
-): Promise<number> => {
+export const createStoreImage = async (image: StoreImage): Promise<number> => {
   try {
-    const insertImageQuery = `
+    const query = `
       INSERT INTO STOREIMAGE (imageUrl, storeId) VALUES (?, ?);
     `;
-    const [result] = await pool.query(insertImageQuery, [imageUrl, storeId]);
+    const values = [image.imageUrl, image.storeId];
+    const [result] = await pool.query(query, values);
     return (result as any).insertId as number;
   } catch (error) {
     console.error(error);

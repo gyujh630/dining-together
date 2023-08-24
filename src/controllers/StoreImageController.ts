@@ -1,24 +1,26 @@
 import { Request, Response } from 'express';
 import {
   StoreImage,
-  addImageToStore,
+  createStoreImage,
   getImagesByStoreId,
   deleteImage,
 } from '../models/StoreImageModel';
 
 // 이미지 추가
-export const addImageToStoreHandler = async (
-  req: Request,
-  res: Response
+export const createImageAndStoreAssociation = async (
+  storeId: number,
+  imageUrl: string
 ): Promise<void> => {
   try {
-    const storeId = parseInt(req.params.storeId, 10);
-    const imageUrl = req.body.imageUrl;
-    const imageId = await addImageToStore(storeId, imageUrl);
-    res.status(201).json({ imageId });
+    const image: StoreImage = {
+      imageUrl,
+      storeId,
+    };
+
+    await createStoreImage(image);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Failed to add image to store' });
+    throw new Error('Failed to associate image with store');
   }
 };
 
