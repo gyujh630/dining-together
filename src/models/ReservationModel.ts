@@ -13,26 +13,43 @@ export interface Reservation {
   status: string;
 }
 
-// 예약 생성
 export async function createReservation(
   newReservation: Reservation
 ): Promise<number> {
-  const createReservationQuery = `
-    INSERT INTO RESERVATION (userId, storeId, placeId, people, reservedDate, visitTime)
-    VALUES (?, ?, ?, ?, ?, ?)
+  const findStoreIdQuery = `
+    SELECT storeId 
+    FROM STORE
+    WHERE placeId = ?
   `;
 
   try {
-    const [result] = await pool.query(createReservationQuery, [
-      newReservation.userId,
-      newReservation.storeId,
+    // placeId를 사용하여 storeId를 찾기
+    const [storeResult]: any = await pool.query(findStoreIdQuery, [
       newReservation.placeId,
-      newReservation.people,
-      newReservation.reservedDate,
-      newReservation.visitTime,
     ]);
+    console.log(storeResult);
 
-    return (result as any).insertId as number;
+    if (storeResult.length === 0) {
+      throw new Error('공간이 등록된 가게가 존재하지 않습니다.');
+    } else if (storeResult[0].isDeleted) {
+      throw new Error('삭제된 가게의 공간입니다.');
+    } else {
+      const storeId = storeResult[0].storeId;
+      const createReservationQuery = `
+      INSERT INTO RESERVATION (userId, storeId, placeId, people, reservedDate, visitTime)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `;
+      const [result] = await pool.query(createReservationQuery, [
+        newReservation.userId,
+        storeId,
+        newReservation.placeId,
+        newReservation.people,
+        newReservation.reservedDate,
+        newReservation.visitTime,
+      ]);
+
+      return (result as any).insertId as number;
+    }
   } catch (error) {
     console.error(error);
     throw new Error('Error creating reservation');
