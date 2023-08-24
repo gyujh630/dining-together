@@ -11,7 +11,10 @@ import {
   getPlaceHandler,
   updatePlaceHandler,
 } from '../controllers/PlaceController';
-import { getAllImagesHandler } from '../controllers/StoreImageController';
+import {
+  getAllImagesHandler,
+  getImageHandler,
+} from '../controllers/StoreImageController';
 import { upload } from '../config/uploadConfig';
 import { getReservationsByStoreIdHandler } from '../controllers/ReservationController';
 const storeRouter = express.Router();
@@ -35,5 +38,6 @@ storeRouter.put(
 
 // STOREIMAGE
 storeRouter.get('/:storeId/images', getAllImagesHandler);
+storeRouter.get('/images/:imageId', getImageHandler);
 
 export { storeRouter };

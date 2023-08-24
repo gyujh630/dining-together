@@ -23,7 +23,7 @@ export const addImageToStore = async (
   }
 };
 
-// 특정 가게의 이미지 목록 조회
+// 특정 가게의 전체 이미지 조회
 export const getImagesByStoreId = async (
   storeId: number
 ): Promise<StoreImage[]> => {
@@ -39,13 +39,19 @@ export const getImagesByStoreId = async (
   }
 };
 
-// 특정 이미지 삭제
-export const deleteImage = async (imageId: number): Promise<void> => {
+// 특정 가게의 특정 이미지 조회
+export const getImageByImageId = async (
+  imageId: number
+): Promise<StoreImage[] | null> => {
   try {
     const query = `
-      DELETE FROM STOREIMAGE WHERE imageId = ?;
-    `;
-    await pool.query(query, [imageId]);
+    SELECT * FROM STOREIMAGE WHERE ImageId = ?;
+  `;
+    const [rows] = await pool.query(query, [imageId]);
+    if (Array.isArray(rows) && rows.length > 0) {
+      return rows[0] as StoreImage[];
+    }
+    return null;
   } catch (error) {
     console.error(error);
     throw new Error('Failed to delete image');
