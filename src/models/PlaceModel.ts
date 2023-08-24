@@ -1,4 +1,6 @@
 import pool from '../config/dbConfig';
+import multer from 'multer';
+import path from 'path';
 
 // UTC 시간을 한국 시간으로 변환하는 함수
 const convertUtcToKoreaTime = (utcDate: Date): Date => {
@@ -6,6 +8,24 @@ const convertUtcToKoreaTime = (utcDate: Date): Date => {
   const koreaTime = new Date(utcDate.getTime() + koreaOffset);
   return koreaTime;
 };
+
+// 파일 저장 경로 설정
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'uploads/places/');
+  },
+  filename: (req, file, cb) => {
+    const extname = path.extname(file.originalname);
+    const filename = `${Date.now()}${extname}`;
+    cb(null, filename);
+  },
+});
+
+// 파일 업로드 설정
+export const upload = multer({
+  storage: storage,
+  limits: { fileSize: 10 * 1024 * 1024 },
+});
 
 export interface Place {
   placeId?: number; // 자동 생성
@@ -25,11 +45,13 @@ export const createPlace = async (place: Place): Promise<number> => {
     const nowUtc = new Date();
     const koreaCreatedAt = convertUtcToKoreaTime(nowUtc);
     const koreaModifiedAt = koreaCreatedAt;
+
     const query = `
       INSERT INTO PLACE
       (storeId, placeName, placeType, placeImage, maxPeople, minPeople, createdAt, modifiedAt)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?);
   `;
+
     const values = [
       place.storeId,
       place.placeName,

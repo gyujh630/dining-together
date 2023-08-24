@@ -1,21 +1,37 @@
 import { Request, Response } from 'express';
+import path from 'path';
 import {
   Place,
   createPlace,
   getPlaceByStoreId,
   getPlaceByStorePlaceId,
   updatePlace,
+  upload,
 } from '../models/PlaceModel';
 
-// 특정 가게의 공간 추가
-export const createPlaceHandler = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
+export const createPlaceHandler = (req: Request, res: Response): void => {
   try {
     const newPlace: Place = req.body;
-    const placeId = await createPlace(newPlace);
-    res.status(201).json({ placeId });
+
+    // 이미지 업로드 처리
+    upload.single('placeImage')(req, res, async (err: any) => {
+      // if (err) {
+      //   console.error(err);
+      //   return res.status(500).json({ error: 'Failed to upload image' });
+      // }
+
+      if (req.file) {
+        // 이미지 업로드 성공한 경우
+        newPlace.placeImage = path.join(
+          'uploads',
+          'places',
+          req.file.originalname
+        ); // 이미지 파일 경로 저장
+      }
+
+      const placeId = await createPlace(newPlace);
+      res.status(201).json({ placeId });
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Failed to create place' });
@@ -70,9 +86,27 @@ export const updatePlaceHandler = async (
     const storeId = parseInt(req.params.storeId, 10);
     const placeId = parseInt(req.params.placeId, 10);
     const updatedPlace: Place = req.body;
-    await updatePlace(storeId, placeId, updatedPlace);
 
-    res.status(200).json({ message: 'Place updated successfully' });
+    // 새로운 이미지 업로드 처리
+    upload.single('newPlaceImage')(req, res, async (err: any) => {
+      // if (err) {
+      //   console.error(err);
+      //   return res.status(500).json({ error: 'Failed to upload image' });
+      // }
+
+      if (req.file) {
+        // 이미지 업로드 성공한 경우
+        updatedPlace.placeImage = path.join(
+          'uploads',
+          'places',
+          req.file.originalname
+        ); // 이미지 파일 경로 저장
+      }
+
+      await updatePlace(storeId, placeId, updatedPlace);
+
+      res.status(200).json({ message: 'Place updated successfully' });
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Failed to update place' });
