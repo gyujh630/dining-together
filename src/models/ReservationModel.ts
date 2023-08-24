@@ -1,5 +1,5 @@
 import pool from '../config/dbConfig';
-
+import Place from './PlaceModel';
 export interface Reservation {
   reservedId: number;
   userId: number;
@@ -13,6 +13,20 @@ export interface Reservation {
   status: string;
 }
 
+// // 예약하기 - 예약 가능 공간 조회
+// export async function findAvailablePlaces(
+//   storeId: number,
+//   reservedDate: string,
+//   people: number
+// ): Promise<Place[]> {
+//   try {
+//   } catch (error) {
+//     console.error(error);
+//     throw new Error('Error finding available places');
+//   }
+// }
+
+//예약 생성
 export async function createReservation(
   newReservation: Reservation
 ): Promise<number> {
@@ -134,24 +148,28 @@ export async function updateReservationById(
   reservedId: number,
   updatedData: Reservation
 ): Promise<void> {
+  const updateFields = Object.entries(updatedData)
+    .filter(([key, value]) => value !== undefined)
+    .map(([key]) => `${key} = ?`)
+    .join(', ');
+
+  if (!updateFields) {
+    throw new Error('No fields to update');
+  }
+
+  const values = Object.values(updatedData).filter(
+    (value) => value !== undefined
+  );
+  values.push(reservedId);
+
   const updateReservationQuery = `
     UPDATE RESERVATION
-    SET
-      people = ?,
-      reservedDate = ?,
-      visitTime = ?,
-      status = ?
+    SET ${updateFields}
     WHERE reservedId = ?
   `;
 
   try {
-    await pool.query(updateReservationQuery, [
-      updatedData.people,
-      updatedData.reservedDate,
-      updatedData.visitTime,
-      updatedData.status,
-      reservedId,
-    ]);
+    await pool.query(updateReservationQuery, values);
   } catch (error) {
     console.error(error);
     throw new Error('Error updating reservation');
