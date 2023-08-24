@@ -91,8 +91,22 @@ export const createStore = async (
   }
 };
 
-// 가게 전체 조회
+// 가게 전체 조회(관리자)
 export const getAllStores = async (): Promise<Store[]> => {
+  try {
+    const query = `
+      SELECT * FROM STORE;
+    `;
+    const [rows] = await pool.query(query);
+    return rows as Store[];
+  } catch (error) {
+    console.error(error);
+    throw new Error('Failed to fetch stores');
+  }
+};
+
+// 가게 전체 조회(사용자)
+export const getAllStoresNotDel = async (): Promise<Store[]> => {
   try {
     const query = `
       SELECT * FROM STORE WHERE isDeleted = 0;
