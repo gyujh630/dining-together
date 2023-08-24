@@ -1,8 +1,7 @@
 import pool from '../config/dbConfig';
 import multer from 'multer';
 import path from 'path';
-import { Request } from 'express';
-import { StoreImage, addImageToStore } from './StoreImageModel';
+import { addImageToStore } from './StoreImageModel';
 
 // UTC 시간을 한국 시간으로 변환하는 함수
 const convertUtcToKoreaTime = (utcDate: Date): Date => {
