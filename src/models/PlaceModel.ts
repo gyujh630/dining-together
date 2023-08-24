@@ -144,31 +144,27 @@ export const updatePlace = async (
 // 예약하기 - 예약 가능 공간 조회
 export async function findAvailablePlaces(
   storeId: number,
-  reservedDate: string,
+  date: string,
   people: number
 ): Promise<Place[]> {
   try {
-    // // 가게에 속한 모든 공간을 가져옴
-    // const places: Place[] = await getPlacesByStoreId(storeId);
+    // 가게에 속한 모든 공간을 가져옴
+    const places: Place[] = await getPlacesByStoreId(storeId);
 
-    // 해당 날짜에 예약되지 않은 예약목록을 가져옴
+    // 해당 날짜에 예약 가능한 예약목록을 가져옴
     const query = `
       SELECT DISTINCT p.*
       FROM PLACE p
-      LEFT JOIN RESERVATION r
-      ON p.placeId = r.placeId
       WHERE p.storeId = ? 
-      AND p.maxPeople >= ?
-      AND p.minPeople <= ?
-      AND r.reservedDate != ?
+      AND p.placeId NOT IN (
+        SELECT r.placeId
+        FROM RESERVATION r
+        WHERE r.reservedDate = ?
+      )
     `;
-
-    const [rows] = await pool.query(query, [
-      storeId,
-      people,
-      people,
-      reservedDate,
-    ]);
+    // AND p.maxPeople >= ?
+    // AND p.minPeople <= ?
+    const [rows] = await pool.query(query, [storeId, date]);
 
     return rows as Place[];
   } catch (error) {

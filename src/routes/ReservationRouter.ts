@@ -11,8 +11,8 @@ const reservationRouter = express.Router();
 
 reservationRouter.post('/', createReservationHandler);
 reservationRouter.get('/', getAllReservationsHandler);
+reservationRouter.get('/placelist', getAvailablePlacesHandler);
 reservationRouter.get('/:reservedId', getReservationByIdHandler);
 reservationRouter.put('/:reservedId', updateReservationHandler);
-reservationRouter.get('/placelist', getAvailablePlacesHandler);
 
 export { reservationRouter };

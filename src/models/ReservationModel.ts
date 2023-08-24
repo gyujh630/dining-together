@@ -1,5 +1,6 @@
 import pool from '../config/dbConfig';
 import Place from './PlaceModel';
+import { getStoreById } from './StoreModel';
 export interface Reservation {
   reservedId: number;
   userId: number;
@@ -17,39 +18,21 @@ export interface Reservation {
 export async function createReservation(
   newReservation: Reservation
 ): Promise<number> {
-  const findStoreIdQuery = `
-    SELECT storeId 
-    FROM PLACE
-    WHERE placeId = ?
-  `;
-
   try {
-    // placeId를 사용하여 storeId를 찾기
-    const [storeResult]: any = await pool.query(findStoreIdQuery, [
-      newReservation.placeId,
-    ]);
-
-    if (storeResult.length === 0) {
-      throw new Error('공간이 등록된 가게가 존재하지 않습니다.');
-    } else if (storeResult[0].isDeleted) {
-      throw new Error('삭제된 가게의 공간입니다.');
-    } else {
-      const storeId = storeResult[0].storeId;
-      const createReservationQuery = `
+    const createReservationQuery = `
       INSERT INTO RESERVATION (userId, storeId, placeId, people, reservedDate, visitTime)
       VALUES (?, ?, ?, ?, ?, ?)
     `;
-      const [result] = await pool.query(createReservationQuery, [
-        newReservation.userId,
-        storeId,
-        newReservation.placeId,
-        newReservation.people,
-        newReservation.reservedDate,
-        newReservation.visitTime,
-      ]);
+    const [result] = await pool.query(createReservationQuery, [
+      newReservation.userId,
+      newReservation.storeId,
+      newReservation.placeId,
+      newReservation.people,
+      newReservation.reservedDate,
+      newReservation.visitTime,
+    ]);
 
-      return (result as any).insertId as number;
-    }
+    return (result as any).insertId as number;
   } catch (error) {
     console.error(error);
     throw new Error('Error creating reservation');

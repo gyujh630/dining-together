@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import pool from '../config/dbConfig';
 import {
   Reservation,
   createReservation,
@@ -12,29 +13,29 @@ import { getStoreById, getUserById } from '../models';
 import Place, { getPlaceByPlaceId } from '../models/PlaceModel';
 import { findAvailablePlaces } from '../models/PlaceModel';
 
-// 예약하기 - 예약 가능 공간 조회
+// 예약 가능 공간 조회
 export async function getAvailablePlacesHandler(
   req: Request,
   res: Response
 ): Promise<void> {
   try {
-    const { storeId, reservedDate, people } = req.body;
-    const store = await getStoreById(storeId);
+    const { storeId, date, people } = req.query;
+    console.log(storeId);
+    const parsedStoreId = parseInt(storeId as string, 10);
+    const parsedPeople = parseInt(people as string, 10);
+
+    const store = await getStoreById(parsedStoreId);
     if (!store || store.isDeleted) {
       res.status(404).json({ error: 'Store not found' });
-    } else if (people > store.maxNum || people <= 0) {
+    } else if (parsedPeople > store.maxNum || parsedPeople <= 0) {
       res.status(400).json({ error: 'invalid data' });
     } else {
       const availablePlaces = await findAvailablePlaces(
-        storeId,
-        reservedDate,
-        people
+        parsedStoreId,
+        date as string,
+        parsedPeople
       );
-      if (availablePlaces.length === 0) {
-        res.status(404).json({ error: 'No available places found' });
-      } else {
-        res.status(200).json(availablePlaces);
-      }
+      res.status(200).json(availablePlaces);
     }
   } catch (error: any) {
     res.status(500).json({ error: 'Failed to get available place list' });
@@ -46,19 +47,39 @@ export async function createReservationHandler(
   req: Request,
   res: Response
 ): Promise<void> {
+  const findStoreIdQuery = `
+    SELECT storeId
+    FROM PLACE
+    WHERE placeId = ?
+  `;
   try {
-    const { userId, placeId } = req.body;
+    const { userId, placeId, people } = req.body;
     const user = await getUserById(userId);
     const place = await getPlaceByPlaceId(placeId);
-
+    const [storeResult]: any = await pool.query(findStoreIdQuery, [placeId]); // placeId를 사용하여 storeId를 찾기
     if (!user || user.isDeleted) {
-      res.status(404).json({ error: 'User not found' });
+      res.status(404).send('User not found');
     } else if (!place || place.isDeleted) {
-      res.status(404).json({ error: 'Place not found' });
+      res.status(404).send('Place not found');
+    } else if (storeResult.length === 0) {
+      res.status(404).send('Store not found');
     } else {
-      const newReservation: Reservation = req.body;
-      const reservedId = await createReservation(newReservation);
-      res.status(201).json({ reservedId });
+      const store: any = await getStoreById(Number(storeResult[0].storeId));
+      if (
+        people > store.maxNum ||
+        people < 1 ||
+        people > place.maxPeople ||
+        people < place.minPeople
+      ) {
+        res.status(400).send('인원수가 유효하지 않습니다.');
+      } else {
+        const newReservation: Reservation = {
+          ...req.body, // 기존 필드 유지
+          storeId: store.storeId, // storeId 추가
+        };
+        const reservedId = await createReservation(newReservation);
+        res.status(201).json({ reservedId });
+      }
     }
   } catch (error: any) {
     res.status(500).json({ error: 'Failed to create reservation' });
