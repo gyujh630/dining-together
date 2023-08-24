@@ -10,6 +10,7 @@ import {
   logOutHandler,
   checkEmailHandler,
 } from '../controllers/userController';
+import { getReservationsByUserIdHandler } from '../controllers/ReservationController';
 
 const userRouter = express.Router();
 
@@ -20,6 +21,7 @@ userRouter.post('/login', logInHandler);
 userRouter.get('/logout', logOutHandler);
 userRouter.get('/:userId', getUserHandler);
 userRouter.put('/:userId', updateUserHandler);
+userRouter.get('/:userId/reserve', getReservationsByUserIdHandler);
 // userRouter.delete('/:userId', deleteUserHandler);
 
 export { userRouter };

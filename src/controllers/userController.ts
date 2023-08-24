@@ -91,7 +91,7 @@ export async function getUserHandler(
   try {
     const userId: number = parseInt(req.params.userId, 10);
     const user = await getUserById(userId);
-    if (!user) {
+    if (!user || !user.isDeleted) {
       res.status(404).send('User not found');
     } else {
       res.json(user);
@@ -123,12 +123,13 @@ export async function updateUserHandler(
     const userId: number = parseInt(req.params.userId, 10);
     const user = await getUserById(userId);
     const updatedUser: User = req.body;
-    if (!user) {
+    if (!user || !user.isDeleted) {
       res.status(404).send('User not found');
       return;
+    } else {
+      await updateUserById(userId, updatedUser);
+      res.send('User updated successfully');
     }
-    await updateUserById(userId, updatedUser);
-    res.send('User updated successfully');
   } catch (error: any) {
     res.status(500).send(`Error: ${error.message}`);
   }
