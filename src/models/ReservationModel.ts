@@ -13,19 +13,6 @@ export interface Reservation {
   status: string;
 }
 
-// // 예약하기 - 예약 가능 공간 조회
-// export async function findAvailablePlaces(
-//   storeId: number,
-//   reservedDate: string,
-//   people: number
-// ): Promise<Place[]> {
-//   try {
-//   } catch (error) {
-//     console.error(error);
-//     throw new Error('Error finding available places');
-//   }
-// }
-
 //예약 생성
 export async function createReservation(
   newReservation: Reservation
