@@ -37,6 +37,7 @@ export interface Place {
   minPeople: number;
   createdAt?: Date; // 자동 생성
   modifiedAt?: Date; // 자동 업데이트
+  isDeleted: boolean;
 }
 
 // 특정 가게의 공간 추가
@@ -113,8 +114,12 @@ export const updatePlace = async (
   try {
     const nowUtc = new Date();
     const koreaModifiedAt = convertUtcToKoreaTime(nowUtc);
-    const updateFields = Object.entries(updatedPlace)
-      .filter(([key, value]) => value !== undefined && key !== 'placeId')
+
+    let updateFields = Object.entries(updatedPlace)
+      .filter(
+        ([key, value]) =>
+          value !== undefined && key !== 'storeId' && key !== 'placeId'
+      )
       .map(([key]) => `${key} = ?`)
       .join(', ');
 
@@ -129,10 +134,15 @@ export const updatePlace = async (
     `;
 
     const values = Object.entries(updatedPlace)
-      .filter(([key, value]) => value !== undefined && key !== 'placeId')
+      .filter(([key, value]) => value !== undefined && key !== undefined)
       .map(([key, value]) => value);
 
-    values.push(koreaModifiedAt, storeId, placeId);
+    values.push(...values, koreaModifiedAt, storeId, placeId);
+    // if (updatedPlace.placeImage) {
+    //   values.push(koreaModifiedAt, ...values, storeId, placeId);
+    // } else {
+    //   values.push(koreaModifiedAt, storeId, placeId);
+    // }
     await pool.query(updatePlaceQuery, values);
   } catch (error) {
     console.error(error);

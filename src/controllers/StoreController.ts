@@ -5,10 +5,6 @@ import {
   getAllStores,
   getStoreById,
   updateStore,
-  deleteStore,
-  StoreImage,
-  addImageToStore,
-  getImagesByStoreId,
 } from '../models/index';
 
 // 가게 추가
@@ -18,7 +14,7 @@ export const createStoreHandler = async (
 ): Promise<void> => {
   try {
     const newStore: Store = req.body;
-    const storeId = await createStore(newStore, req);
+    const storeId = await createStore(newStore, req.file?.path);
     res.status(201).json({ storeId });
   } catch (error) {
     console.error(error);
@@ -49,8 +45,6 @@ export const getStoreHandler = async (
     const storeId = parseInt(req.params.storeId, 10);
     const store = await getStoreById(storeId);
     if (store) {
-      const images = await getImagesByStoreId(storeId);
-      store.storeImage = images;
       res.status(200).json(store);
     } else {
       res.status(404).json({ error: 'Store not found' });
@@ -61,7 +55,7 @@ export const getStoreHandler = async (
   }
 };
 
-// 가게 정보 수정 & 소프트 삭제
+// 가게 정보 수정
 export const updateStoreHandler = async (
   req: Request,
   res: Response
@@ -69,7 +63,7 @@ export const updateStoreHandler = async (
   try {
     const storeId = parseInt(req.params.storeId, 10);
     const updatedStore: Store = req.body;
-    await updateStore(storeId, updatedStore);
+    await updateStore(storeId, updatedStore, req.file?.path);
     res.status(200).json({ message: 'Store updated successfully' });
   } catch (error) {
     console.error(error);
@@ -77,43 +71,17 @@ export const updateStoreHandler = async (
   }
 };
 
-// 가게 삭제
-export const deleteStoreHandler = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
-  try {
-    const storeId = parseInt(req.params.storeId, 10);
-    await deleteStore(storeId);
-    res.status(200).json({ message: 'Store deleted successfully' });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Failed to delete store' });
-  }
-};
-
-// // 가게 추가(STOREIMAGE 조인) x
-// export const createStoreWithImageHandler = async (
+// // 가게 삭제
+// export const deleteStoreHandler = async (
 //   req: Request,
 //   res: Response
 // ): Promise<void> => {
 //   try {
-//     const newStore: Store = req.body;
-//     const files = req.files as Express.Multer.File[];
-
-//     const storeId = await createStore(newStore, req);
-
-//     const imagePromises = files.map(async (file) => {
-//       const imageUrl = `/uploads/${file.filename}`;
-//       const imageId = await addImageToStore(storeId, imageUrl);
-//       return imageId;
-//     });
-
-//     await Promise.all(imagePromises);
-
-//     res.status(201).json({ storeId });
+//     const storeId = parseInt(req.params.storeId, 10);
+//     await deleteStore(storeId);
+//     res.status(200).json({ message: 'Store deleted successfully' });
 //   } catch (error) {
 //     console.error(error);
-//     res.status(500).json({ error: 'Failed to create store with image' });
+//     res.status(500).json({ error: 'Failed to delete store' });
 //   }
 // };

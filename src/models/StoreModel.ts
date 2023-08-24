@@ -2,7 +2,7 @@ import pool from '../config/dbConfig';
 import multer from 'multer';
 import path from 'path';
 import { Request } from 'express';
-import { StoreImage } from './StoreImageModel';
+import { StoreImage, addImageToStore } from './StoreImageModel';
 
 // UTC 시간을 한국 시간으로 변환하는 함수
 const convertUtcToKoreaTime = (utcDate: Date): Date => {
@@ -14,7 +14,7 @@ const convertUtcToKoreaTime = (utcDate: Date): Date => {
 // 파일 저장 경로 설정
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, 'uploads/');
+    cb(null, 'uploads/stores');
   },
   filename: (req, file, cb) => {
     const extname = path.extname(file.originalname);
@@ -54,7 +54,7 @@ export interface Store {
 // 가게 추가
 export const createStore = async (
   store: Store,
-  req: Request
+  imagePath: string | undefined
 ): Promise<number> => {
   try {
     const nowUtc = new Date();
@@ -83,8 +83,15 @@ export const createStore = async (
       koreaCreatedAt,
       koreaModifiedAt,
     ];
+
     const [result] = await pool.query(query, values);
-    return (result as any).insertId as number;
+    const storeId = (result as any).insertId as number;
+
+    if (imagePath) {
+      await addImageToStore(storeId, imagePath);
+    }
+
+    return storeId;
   } catch (error) {
     console.error(error);
     throw new Error('Failed to create store');
@@ -139,7 +146,8 @@ export const getStoreById = async (storeId: number): Promise<Store | null> => {
 // 가게 정보 수정
 export const updateStore = async (
   storeId: number,
-  updatedStore: Store
+  updatedStore: Store,
+  imagePath: string | undefined
 ): Promise<void> => {
   try {
     const nowUtc = new Date();

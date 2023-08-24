@@ -1,26 +1,5 @@
 import { Request, Response } from 'express';
-import {
-  StoreImage,
-  addImageToStore,
-  getImagesByStoreId,
-  deleteImage,
-} from '../models/StoreImageModel';
-
-// 이미지 추가
-export const addImageToStoreHandler = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
-  try {
-    const storeId = parseInt(req.params.storeId, 10);
-    const imageUrl = req.body.imageUrl;
-    const imageId = await addImageToStore(storeId, imageUrl);
-    res.status(201).json({ imageId });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Failed to add image to store' });
-  }
-};
+import { getImagesByStoreId, deleteImage } from '../models/StoreImageModel';
 
 // 특정 가게의 이미지 목록 조회
 export const getImagesByStoreIdHandler = async (
