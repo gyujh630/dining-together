@@ -1,5 +1,5 @@
 import express, { Application, Request, Response } from 'express';
-const cors = require('cors');
+import cors from 'cors';
 import {
   userRouter,
   storeRouter,
