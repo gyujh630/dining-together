@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { getAllStoresNotDel } from '../models/index';
+import { getHomeWhenLogin, getHomeWhenNotLogin, getUserById } from '../models';
 
 // 가게 전체 조회
 export const getHomeController = async (
@@ -7,14 +7,32 @@ export const getHomeController = async (
   res: Response
 ): Promise<void> => {
   try {
-    const userType = req.query.userType;
-    console.log(userType);
-    if (userType === undefined || userType === '2') {
-      console.log('비회원, 사장님 회원');
-    } else if (userType === '1') {
-      console.log('일반회원');
-    } else {
-      res.status(400).json({ error: '잘못된 userType 값' });
+    const { userId, userType } = req.query;
+    // const parseUserId = parseInt(userId, 10)
+
+    // userType과 userId가 정의되지 않은 경우 (로그인x)
+    if (userType === undefined && userId === undefined) {
+      const a = await getHomeWhenNotLogin(); // 비로그인 시 화면 조회
+      res.status(200).json(a);
+    } else if (typeof userId === 'string') {
+      const user = await getUserById(parseInt(userId, 10));
+      if (!user) {
+        res.status(404).send(`User not found`);
+      } else {
+        //user가 유효함
+        if (userType === '2') {
+          const a = await getHomeWhenNotLogin();
+          res.status(200).json(a);
+        } else if (userType === '1') {
+          const a = await getHomeWhenLogin(
+            parseInt(userId, 10),
+            parseInt(userType, 10)
+          );
+          res.status(200).json(a);
+        } else {
+          res.status(400).json({ error: '유효하지 않은 userType 값입니다.' });
+        }
+      }
     }
   } catch (error) {
     console.error(error);
