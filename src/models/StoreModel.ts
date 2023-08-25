@@ -1,7 +1,9 @@
 import pool from '../config/dbConfig';
 import multer from 'multer';
 import path from 'path';
-import { addImageToStore } from './StoreImageModel';
+import { Request } from 'express';
+import { StoreImage, addImageToStore } from './StoreImageModel';
+import { seoulRegionList } from '../utils/string-util';
 
 // UTC 시간을 한국 시간으로 변환하는 함수
 const convertUtcToKoreaTime = (utcDate: Date): Date => {
@@ -200,6 +202,117 @@ export const deleteStore = async (storeId: number): Promise<void> => {
   } catch (error) {
     console.error(error);
     throw new Error('Failed to delete store');
+  }
+};
+
+export const getHomeWhenLogin = async (
+  userId: number,
+  userType: number
+): Promise<any> => {
+  const randomRegion =
+    seoulRegionList[Math.floor(Math.random() * seoulRegionList.length)];
+
+  try {
+    //지역 랜덤 추천 쿼리
+    const regionRandomQuery = `
+      SELECT storeId, storeName, foodCategory FROM STORE
+      WHERE location = ?
+      ORDER BY RAND()
+      LIMIT 10;
+    `;
+
+    //30인 이상 단체 가능 쿼리
+    const bigStoreQuery = `
+      SELECT S.storeId, storeName, foodCategory
+      FROM STORE S
+      JOIN (
+        SELECT MAX(P.maxPeople) AS maxPeople, P.storeId
+        FROM PLACE P
+        GROUP BY P.storeId
+      ) AS MaxPlaces
+      ON S.storeId = MaxPlaces.storeId
+      WHERE MaxPlaces.maxPeople >= 30
+      LIMIT 10;
+    `;
+
+    //새로 입점 쿼리
+    const newStoreQuery = `
+      SELECT storeId, storeName, foodCategory FROM STORE
+      ORDER BY createdAt DESC
+      LIMIT 10;
+    `;
+
+    const [regionRandomList] = await pool.query(regionRandomQuery, [
+      randomRegion,
+    ]);
+    const [bigList] = await pool.query(bigStoreQuery);
+    const [newStoreList] = await pool.query(newStoreQuery);
+
+    // 동적인 속성 이름을 사용하여 객체 생성
+    const result: { [key: string]: any } = {
+      [randomRegion]: regionRandomList,
+      '30인 이상 단체 가능!': bigList,
+      '새로 입점했어요': newStoreList,
+    };
+
+    return result;
+  } catch (error) {
+    console.error(error);
+    throw new Error('Failed to get home');
+  }
+};
+
+export const getHomeWhenNotLogin = async (): Promise<any> => {
+  const randomRegion =
+    seoulRegionList[Math.floor(Math.random() * seoulRegionList.length)];
+
+  try {
+    //지역 랜덤 추천 쿼리
+    const regionRandomQuery = `
+      SELECT storeId, storeName, foodCategory FROM STORE
+      WHERE location = ?
+      ORDER BY RAND()
+      LIMIT 10;
+    `;
+
+    //30인 이상 단체 가능 쿼리
+    const bigStoreQuery = `
+      SELECT S.storeId, storeName, foodCategory
+      FROM STORE S
+      JOIN (
+        SELECT MAX(P.maxPeople) AS maxPeople, P.storeId
+        FROM PLACE P
+        GROUP BY P.storeId
+      ) AS MaxPlaces
+      ON S.storeId = MaxPlaces.storeId
+      WHERE MaxPlaces.maxPeople >= 30
+      LIMIT 10;
+    `;
+
+    //새로 입점 쿼리
+    const newStoreQuery = `
+      SELECT storeId, storeName, foodCategory FROM STORE
+      ORDER BY createdAt DESC
+      LIMIT 10;
+    `;
+
+    const [regionRandomList] = await pool.query(regionRandomQuery, [
+      randomRegion,
+    ]);
+    const [bigList] = await pool.query(bigStoreQuery);
+    const [newStoreList] = await pool.query(newStoreQuery);
+
+    // 동적인 속성 이름을 사용하여 객체 생성
+    const result: { [key: string]: any } = {
+      [randomRegion]: regionRandomList,
+      '30인 이상 단체 가능!': bigList,
+      '새로 입점했어요': newStoreList,
+    };
+
+    return result;
+  } catch (error) {
+    console.error(error);
+    throw new Error('Failed to get home');
   }
 };
 

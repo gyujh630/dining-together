@@ -145,4 +145,37 @@ export const updatePlace = async (
   }
 };
 
+// 예약 가능 공간 조회
+export async function findAvailablePlacesByDate(
+  storeId: number,
+  date: string
+): Promise<Place[]> {
+  try {
+    // 가게에 속한 모든 공간을 가져옴
+    const places: Place[] = await getPlacesByStoreId(storeId);
+
+    // 해당 날짜에 예약 가능한 예약목록을 가져옴
+    const query = `
+      SELECT DISTINCT p.*
+      FROM PLACE p
+      WHERE p.storeId = ? 
+      AND p.placeId NOT IN (
+        SELECT r.placeId
+        FROM RESERVATION r
+        WHERE r.reservedDate = ?
+        AND (r.status != '예약취소')
+      )
+    `;
+
+    // AND p.maxPeople >= ?
+    // AND p.minPeople <= ?
+    const [rows] = await pool.query(query, [storeId, date]);
+
+    return rows as Place[];
+  } catch (error) {
+    console.error(error);
+    throw new Error('Error finding available places');
+  }
+}
+
 export default Place;

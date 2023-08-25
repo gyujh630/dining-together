@@ -12,13 +12,15 @@ export interface User {
   createdAt?: Date;
   modifiedAt?: Date;
   isDeleted: boolean;
+  location: string;
+  meetingTypes: string;
 }
 
 // 회원가입
 export async function createUser(user: User): Promise<number> {
   const createUserQuery = `
-    INSERT INTO USER (email, password, name, phoneNum, userType)
-    VALUES (?, ?, ?, ?, ?)
+    INSERT INTO USER (email, password, name, phoneNum, userType, location, meetingTypes)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
   `;
 
   try {
@@ -33,6 +35,8 @@ export async function createUser(user: User): Promise<number> {
       user.name,
       user.phoneNum,
       user.userType,
+      user.location,
+      user.meetingTypes,
     ]);
 
     return (result as any).insertId as number;
