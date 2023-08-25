@@ -1,4 +1,5 @@
 import express, { Application, Request, Response } from 'express';
+const cors = require('cors');
 import {
   userRouter,
   storeRouter,
@@ -8,6 +9,13 @@ import {
 
 const app: Application = express();
 const port = 3000;
+
+// 모든 도메인에서의 API 요청을 허용하도록 설정
+app.use(
+  cors({
+    origin: '*',
+  })
+);
 
 app.get('/', async (req: Request, res: Response) => {
   res.send('Hello express');
