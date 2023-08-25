@@ -148,8 +148,7 @@ export const updatePlace = async (
 // 예약 가능 공간 조회
 export async function findAvailablePlacesByDate(
   storeId: number,
-  date: string,
-  people: number
+  date: string
 ): Promise<Place[]> {
   try {
     // 가게에 속한 모든 공간을 가져옴

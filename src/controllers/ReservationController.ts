@@ -22,20 +22,16 @@ export async function getAvailablePlacesHandler(
   res: Response
 ): Promise<void> {
   try {
-    const { storeId, date, people } = req.query;
+    const { storeId, date } = req.query;
     const parsedStoreId = parseInt(storeId as string, 10);
-    const parsedPeople = parseInt(people as string, 10);
 
     const store = await getStoreById(parsedStoreId);
     if (!store || store.isDeleted) {
       res.status(404).json({ error: 'Store not found' });
-    } else if (parsedPeople > store.maxNum || parsedPeople <= 0) {
-      res.status(400).json({ error: 'invalid data' });
     } else {
       const availablePlaces = await findAvailablePlacesByDate(
         parsedStoreId,
-        date as string,
-        parsedPeople
+        date as string
       );
       res.status(200).json(availablePlaces);
     }
