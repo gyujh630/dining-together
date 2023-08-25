@@ -8,6 +8,7 @@ import {
   updatePlace,
   upload,
 } from '../models/PlaceModel';
+import { updateIsRoomTrue } from '../models/StoreModel';
 
 export const createPlaceHandler = (req: Request, res: Response): void => {
   try {
@@ -30,6 +31,11 @@ export const createPlaceHandler = (req: Request, res: Response): void => {
       }
 
       const placeId = await createPlace(newPlace);
+
+      if (newPlace.placeType === '룸') {
+        await updateIsRoomTrue(newPlace.storeId);
+      }
+
       res.status(201).json({ placeId });
     });
   } catch (error) {

@@ -11,11 +11,7 @@ const app: Application = express();
 const port = process.env.PORT || 3000;
 
 // 모든 도메인에서의 API 요청을 허용하도록 설정
-app.use(
-  cors({
-    origin: '*',
-  })
-);
+app.use(cors({ origin: '*' }));
 
 app.get('/', async (req: Request, res: Response) => {
   res.send('Hello express');
