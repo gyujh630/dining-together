@@ -8,7 +8,9 @@ export const getAllStoresBySearch = async (
 ): Promise<Store[]> => {
   try {
     const searchQuery = `
-      SELECT * FROM STORE
+      SELECT STORE.*, STOREIMAGE.imageUrl 
+      FROM STORE
+      LEFT JOIN STOREIMAGE ON STORE.storeId = STOREIMAGE.storeId  
       WHERE storeName LIKE ? OR keyword LIKE ?;
     `;
 
