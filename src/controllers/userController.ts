@@ -104,7 +104,7 @@ export async function getUserHandler(
   try {
     const userId: number = parseInt(req.params.userId, 10);
     const user = await getUserById(userId);
-    if (!user || !user.isDeleted) {
+    if (!user || user.isDeleted) {
       res.status(404).send('User not found');
     } else {
       res.json(user);
