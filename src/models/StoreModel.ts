@@ -56,7 +56,6 @@ export interface Store {
   averageRating: number;
   reviewCount: number;
   isDeleted: boolean;
-  // storeImage: StoreImage[]; // STOREIMAGE 테이블의 imageId 배열
 }
 
 // 가게 추가
@@ -114,7 +113,9 @@ export const createStore = async (
 export const getAllStores = async (): Promise<Store[]> => {
   try {
     const query = `
-      SELECT * FROM STORE;
+      SELECT STORE.*, STOREIMAGE.imageUrl
+      FROM STORE
+      LEFT JOIN STOREIMAGE ON STORE.storeId = STOREIMAGE.storeId;
     `;
     const [rows] = await pool.query(query);
     return rows as Store[];
@@ -142,8 +143,12 @@ export const getAllStoresNotDel = async (): Promise<Store[]> => {
 export const getStoreById = async (storeId: number): Promise<Store | null> => {
   try {
     const query = `
-      SELECT * FROM STORE WHERE storeId = ? AND isDeleted = 0;
+      SELECT STORE.*, STOREIMAGE.imageUrl
+      FROM STORE 
+      LEFT JOIN STOREIMAGE ON STORE.storeId = STOREIMAGE.storeId
+      WHERE STOREIMAGE.storeId = ? AND STORE.isDeleted = 0;
     `;
+
     const [rows] = await pool.query(query, [storeId]);
     if (Array.isArray(rows) && rows.length > 0) {
       return rows[0] as Store;

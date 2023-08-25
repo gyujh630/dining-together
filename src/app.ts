@@ -27,8 +27,8 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/api/user', userRouter);
 app.use('/api/stores', storeRouter);
 app.use('/api/reserve', reservationRouter);
+
 app.use('/api/home', homeRouter);
-//app.use('/api/place', placeRouter);
 
 app.listen(port, function () {
   console.log(`App is listening on port ${port} !`);

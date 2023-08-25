@@ -15,9 +15,13 @@ import {
   getAllImagesHandler,
   getImageHandler,
 } from '../controllers/StoreImageController';
+import { searchStores } from '../controllers/SearchController';
 import { upload } from '../config/uploadConfig';
 import { getReservationsByStoreIdHandler } from '../controllers/ReservationController';
 const storeRouter = express.Router();
+
+// SEARCH
+storeRouter.get('/search', searchStores);
 
 // STORE
 storeRouter.post('/', upload.array('storeImage', 3), createStoreHandler);
