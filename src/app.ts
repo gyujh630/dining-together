@@ -8,7 +8,7 @@ import {
 } from './routes/index';
 
 const app: Application = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 
 // 모든 도메인에서의 API 요청을 허용하도록 설정
 app.use(
