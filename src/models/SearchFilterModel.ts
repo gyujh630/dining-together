@@ -33,22 +33,23 @@ export const getAllStoresByFilter = async (
   isRoom: number | undefined
 ): Promise<Store[]> => {
   try {
+    const values = [];
+
+    if (location) values.push(`location = '${location}'`);
+    if (foodCategory) values.push(`foodCategory = '${foodCategory}'`);
+    if (cost) values.push(`cost = ${cost}`);
+    if (mood) values.push(`mood LIKE '%${mood}%'`);
+    if (isRoom) values.push(`isRoom = ${isRoom}`);
+
     const filterQuery = `
       SELECT STORE.*, STOREIMAGE.imageUrl 
       FROM STORE
       LEFT JOIN STOREIMAGE ON STORE.storeId = STOREIMAGE.storeId  
-      WHERE storeName LIKE ? OR keyword LIKE ?;
-    `;
-
-    const values = [
-      `%${location}%`,
-      `%${foodCategory}%`,
-      `%${cost}%`,
-      `%${mood}%`,
-      `%${isRoom}%`,
-    ];
+      WHERE ${values.join(' AND ')}
+      `;
 
     const [rows] = await pool.query(filterQuery, values);
+
     return rows as Store[];
   } catch (error) {
     console.error(error);

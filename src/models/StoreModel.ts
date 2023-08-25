@@ -51,8 +51,8 @@ export interface Store {
   foodCategory: string;
   maxNum: number;
   cost: number;
-  isParking: boolean;
-  isRoom: boolean;
+  isParking: number; // 주차공간 => 0 : 없음, 1 : 있음
+  isRoom: number; // 룸 => 0 : 없음, 1 : 있음
   createdAt?: Date; // 자동 생성
   modifiedAt?: Date; // 자동 업데이트
   averageRating: number;
