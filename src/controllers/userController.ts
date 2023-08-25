@@ -16,15 +16,28 @@ export async function createUserHandler(
   req: Request,
   res: Response
 ): Promise<void> {
+  const emailRegEx =
+    /^[A-Za-z0-9]([-_.]?[A-Za-z0-9])*@[A-Za-z0-9]([-_.]?[A-Za-z0-9])*\.[A-Za-z]{2,3}$/;
+  const passwordRegEx =
+    /^.*(?=^.{8,15}$)(?=.*\d)(?=.*[a-zA-Z])(?=.*[!@#$%^&+=]).*$/;
   try {
     const newUser: User = req.body;
+    if (!emailRegEx.test(newUser.email)) {
+      res.status(400).json({ message: '유효하지 않은 이메일 형식입니다.' });
+      return;
+    }
+    if (!passwordRegEx.test(newUser.password)) {
+      res.status(400).json({ message: '유효하지 않은 비밀번호 형식입니다.' });
+      return;
+    }
     const isEmailDuplicate = await checkEmail(newUser.email);
     if (isEmailDuplicate) {
       res.status(409).json({ message: '중복된 이메일입니다.' });
-    } else {
-      const createdUserId = await createUser(newUser);
-      res.status(201).json({ createdUserId });
+      return;
     }
+    //생성
+    const createdUserId = await createUser(newUser);
+    res.status(201).json({ createdUserId });
   } catch (error: any) {
     res.status(500).send(`Error: ${error.message}`);
   }
