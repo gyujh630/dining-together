@@ -7,13 +7,17 @@ export const searchStores = async (
   res: Response
 ): Promise<void> => {
   try {
-    const { query } = req.query;
-    if (!query || typeof query !== 'string') {
-      res.status(400).json({ error: 'Invalid search query' });
+    const { storeName, keyword } = req.query;
+    const searchResultes: any[] = [];
+
+    if (storeName && typeof storeName === 'string') {
+      const storeResults = await getAllStoresBySearch(storeName, undefined);
+      searchResultes.push(...storeResults);
     }
-
-    const searchResultes = await getAllStoresBySearch(query as string);
-
+    if (keyword && typeof keyword === 'string') {
+      const keywordResults = await getAllStoresBySearch(undefined, keyword);
+      searchResultes.push(...keywordResults);
+    }
     res.status(200).json(searchResultes);
   } catch (error) {
     console.error(error);
