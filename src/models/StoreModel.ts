@@ -45,12 +45,14 @@ export interface Store {
   location: string; // 필터용 지역
   description: string;
   keyword: string;
+  mood: string;
   operatingHours: string;
   closedDays: string;
   foodCategory: string;
   maxNum: number;
   cost: number;
-  isParking: boolean;
+  isParking: number; // 주차공간 => 0 : 없음, 1 : 있음
+  isRoom: number; // 룸 => 0 : 없음, 1 : 있음
   createdAt?: Date; // 자동 생성
   modifiedAt?: Date; // 자동 업데이트
   averageRating: number;
@@ -70,8 +72,8 @@ export const createStore = async (
 
     const query = `
       INSERT INTO STORE
-        (userId, storeName, storeContact, address, location, description, keyword, operatingHours, closedDays, foodCategory, maxNum, cost, isParking, createdAt, modifiedAt)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+        (userId, storeName, storeContact, address, location, description, keyword, mood, operatingHours, closedDays, foodCategory, maxNum, cost, isParking, isRoom, createdAt, modifiedAt)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
     `;
 
     const values = [
@@ -82,12 +84,14 @@ export const createStore = async (
       store.location,
       store.description,
       store.keyword,
+      store.mood,
       store.operatingHours,
       store.closedDays,
       store.foodCategory,
       store.maxNum,
       store.cost,
       store.isParking,
+      store.isRoom,
       koreaCreatedAt,
       koreaModifiedAt,
     ];
@@ -318,6 +322,28 @@ export const getHomeWhenNotLogin = async (): Promise<any> => {
   } catch (error) {
     console.error(error);
     throw new Error('Failed to get home');
+  }
+};
+
+// 공간 추가 시 공간 유형이 룸인 경우 isRoom 1로 업뎃
+export const updateIsRoomTrue = async (storeId: number): Promise<void> => {
+  try {
+    const nowUtc = new Date();
+    const koreaModifiedAt = convertUtcToKoreaTime(nowUtc);
+
+    const updateStoreQuery = `
+      UPDATE STORE
+      SET isRoom = 1, modifiedAt = ?
+      WHERE storeId = ?;
+    `;
+
+    const values = [];
+
+    values.push(koreaModifiedAt, storeId);
+    await pool.query(updateStoreQuery, values);
+  } catch (error) {
+    console.error(error);
+    throw new Error('Failed to update store');
   }
 };
 
