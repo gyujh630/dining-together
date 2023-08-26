@@ -15,3 +15,9 @@ export const seoulRegionList = [
   '성북/노원/중랑',
   '구로/관악/동작',
 ];
+
+export function isDateCloseDay(date: string, closeDay: string) {
+  const pattern =
+    /^(매주\s+)?(첫째주|둘째주|셋째주|넷째주)\s+(월|화|수|목|금|토|일)(\/(월|화|수|목|금|토|일))*$|^월\/화\/수\/목\/금\/토\/일$/;
+  return pattern.test(closeDay);
+}

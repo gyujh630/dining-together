@@ -24,7 +24,6 @@ export async function getAvailablePlacesHandler(
   try {
     const { storeId, date } = req.query;
     const parsedStoreId = parseInt(storeId as string, 10);
-
     const store = await getStoreById(parsedStoreId);
     if (!store || store.isDeleted) {
       res.status(404).json({ error: 'Store not found' });

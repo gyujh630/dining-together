@@ -150,7 +150,7 @@ export const getStoreById = async (storeId: number): Promise<Store | null> => {
       SELECT STORE.*, STOREIMAGE.imageUrl
       FROM STORE 
       LEFT JOIN STOREIMAGE ON STORE.storeId = STOREIMAGE.storeId
-      WHERE STOREIMAGE.storeId = ? AND STORE.isDeleted = 0;
+      WHERE STORE.storeId = ? AND STORE.isDeleted = 0;
     `;
 
     const [rows] = await pool.query(query, [storeId]);
