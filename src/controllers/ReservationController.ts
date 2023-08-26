@@ -56,11 +56,11 @@ export async function createReservationHandler(
     const place = await getPlaceByPlaceId(placeId);
     const [storeResult]: any = await pool.query(findStoreIdQuery, [placeId]); // placeId를 사용하여 storeId를 찾기
     if (!user || user.isDeleted) {
-      res.status(404).send('User not found');
+      res.status(404).json({ error: 'User not found' });
     } else if (!place || place.isDeleted) {
-      res.status(404).send('Place not found');
+      res.status(404).json({ error: 'Place not found' });
     } else if (storeResult.length === 0) {
-      res.status(404).send('Store not found');
+      res.status(404).json({ error: 'Store not found' });
     } else {
       const store: any = await getStoreById(Number(storeResult[0].storeId));
       if (
@@ -69,13 +69,13 @@ export async function createReservationHandler(
         people > place.maxPeople ||
         people < place.minPeople
       ) {
-        res.status(400).send('인원수가 유효하지 않습니다.');
+        res.status(400).json({ error: '인원수가 유효하지 않습니다.' });
         return;
       }
       const available = await isAvailableReservation(placeId, reservedDate);
 
       if (!available) {
-        res.status(409).send('이미 예약되어 있는 공간입니다.');
+        res.status(409).json({ error: '이미 예약되어 있는 공간입니다.' });
         return;
       }
 
@@ -119,7 +119,7 @@ export async function getReservationsByUserIdHandler(
     const userId = parseInt(req.params.userId, 10);
     const user = await getUserById(userId);
     if (!user) {
-      res.status(404).send('User not found');
+      res.status(404).json({ error: 'User not found' });
     } else {
       const reservations = await getReservationsByUserId(userId);
       res.status(200).json(reservations);
@@ -138,7 +138,7 @@ export async function getReservationsByStoreIdHandler(
     const storeId = parseInt(req.params.storeId, 10);
     const store = await getStoreById(storeId);
     if (!store) {
-      res.status(404).send('Store not found');
+      res.status(404).json({ error: 'Store not found' });
     } else {
       const reservations = await getReservationsByStoreId(storeId);
       res.status(200).json(reservations);

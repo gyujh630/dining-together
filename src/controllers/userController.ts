@@ -23,16 +23,16 @@ export async function createUserHandler(
   try {
     const newUser: User = req.body;
     if (!emailRegEx.test(newUser.email)) {
-      res.status(400).json({ message: '유효하지 않은 이메일 형식입니다.' });
+      res.status(400).json({ error: '유효하지 않은 이메일 형식입니다.' });
       return;
     }
     if (!passwordRegEx.test(newUser.password)) {
-      res.status(400).json({ message: '유효하지 않은 비밀번호 형식입니다.' });
+      res.status(400).json({ error: '유효하지 않은 비밀번호 형식입니다.' });
       return;
     }
     const isEmailDuplicate = await checkEmail(newUser.email);
     if (isEmailDuplicate) {
-      res.status(409).json({ message: '중복된 이메일입니다.' });
+      res.status(409).json({ error: '중복된 이메일입니다.' });
       return;
     }
     //생성
@@ -55,14 +55,14 @@ export async function checkEmailHandler(
     if (isEmailDuplicate) {
       res
         .status(200)
-        .json({ isDuplicated: true, message: '중복된 이메일입니다.' });
+        .json({ isDuplicated: true, error: '중복된 이메일입니다.' });
     } else {
       res
         .status(200)
         .json({ isDuplicated: false, message: '사용 가능한 이메일입니다.' });
     }
   } catch (error: any) {
-    res.status(500).send(`Error: ${error.message}`);
+    res.status(500).json(`Error: ${error.message}`);
   }
 }
 
@@ -77,7 +77,7 @@ export async function logInHandler(req: Request, res: Response): Promise<void> {
       const token = generateAuthToken(user);
       res.status(200).json({ token }); // 토큰을 응답으로
     } else {
-      res.status(401).json({ message: 'No Matching User' }); //일치하는 사용자 정보 없음
+      res.status(401).json({ error: 'No Matching User' }); //일치하는 사용자 정보 없음
     }
   } catch (error: any) {
     res.status(500).send(`Error: ${error.message}`);
@@ -105,7 +105,7 @@ export async function getUserHandler(
     const userId: number = parseInt(req.params.userId, 10);
     const user = await getUserById(userId);
     if (!user || user.isDeleted) {
-      res.status(404).send('User not found');
+      res.status(404).json({ error: 'User not found' });
     } else {
       res.json(user);
     }
@@ -137,11 +137,11 @@ export async function updateUserHandler(
     const user = await getUserById(userId);
     const updatedUser: User = req.body;
     if (!user || !user.isDeleted) {
-      res.status(404).send('User not found');
+      res.status(404).json({ error: 'User not found' });
       return;
     } else {
       await updateUserById(userId, updatedUser);
-      res.send('User updated successfully');
+      res.json({ message: 'User updated successfully' });
     }
   } catch (error: any) {
     res.status(500).send(`Error: ${error.message}`);

@@ -17,7 +17,7 @@ export const getHomeController = async (
     } else if (typeof userId === 'string') {
       const user = await getUserById(parseInt(userId, 10));
       if (!user) {
-        res.status(404).send(`User not found`);
+        res.status(404).json({ error: `User not found` });
       } else {
         //user가 유효함
         if (userType === '2') {
