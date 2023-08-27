@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { generateAuthToken, revokeToken } from '../utils/jwt-util';
+import { isEmailValid, isPasswordValid } from '../utils/string-util';
 import { User } from '../models/userModel';
 import {
   createUser,
@@ -16,25 +17,17 @@ export async function createUserHandler(
   req: Request,
   res: Response
 ): Promise<void> {
-  const emailRegEx =
-    /^[A-Za-z0-9]([-_.]?[A-Za-z0-9])*@[A-Za-z0-9]([-_.]?[A-Za-z0-9])*\.[A-Za-z]{2,3}$/;
-  const passwordRegEx =
-    /^.*(?=^.{8,15}$)(?=.*\d)(?=.*[a-zA-Z])(?=.*[!@#$%^&+=]).*$/;
   try {
     const newUser: User = req.body;
-    if (!emailRegEx.test(newUser.email)) {
+    if (!isEmailValid(newUser.email)) {
       res.status(400).json({ error: '유효하지 않은 이메일 형식입니다.' });
       return;
     }
-    if (!passwordRegEx.test(newUser.password)) {
+    if (!isPasswordValid(newUser.password)) {
       res.status(400).json({ error: '유효하지 않은 비밀번호 형식입니다.' });
       return;
     }
-    const isEmailDuplicate = await checkEmail(newUser.email);
-    if (isEmailDuplicate) {
-      res.status(409).json({ error: '중복된 이메일입니다.' });
-      return;
-    }
+
     //생성
     const createdUserId = await createUser(newUser);
     res.status(201).json({ createdUserId });
@@ -136,30 +129,10 @@ export async function updateUserHandler(
     const userId: number = parseInt(req.params.userId, 10);
     const user = await getUserById(userId);
     const updatedUser: User = req.body;
-    if (!user || !user.isDeleted) {
-      res.status(404).json({ error: 'User not found' });
-      return;
-    } else {
-      await updateUserById(userId, updatedUser);
-      res.json({ message: 'User updated successfully' });
-    }
-  } catch (error: any) {
-    res.status(500).send(`Error: ${error.message}`);
-  }
-}
 
-/*
-// 회원 삭제
-export async function deleteUserHandler(
-  req: Request,
-  res: Response
-): Promise<void> {
-  try {
-    const userId: number = parseInt(req.params.userId, 10);
-    await deleteUserById(userId);
-    res.send('User deleted successfully');
+    await updateUserById(userId, updatedUser);
+    res.json({ message: 'User updated successfully' });
   } catch (error: any) {
     res.status(500).send(`Error: ${error.message}`);
   }
 }
-*/

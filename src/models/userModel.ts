@@ -143,19 +143,3 @@ export async function updateUserById(
     throw new Error('Error updating user');
   }
 }
-
-/*
-// 회원 삭제
-export async function deleteUserById(userId: number): Promise<void> {
-  const deleteUserQuery = `
-    DELETE FROM USER WHERE userId = ?
-  `;
-
-  try {
-    await pool.query(deleteUserQuery, [userId]);
-  } catch (error) {
-    console.log(error);
-    throw new Error('Error deleting user');
-  }
-}
-*/

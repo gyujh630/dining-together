@@ -167,14 +167,10 @@ export async function updateReservationHandler(
 ): Promise<void> {
   try {
     const reservedId: number = parseInt(req.params.reservedId, 10);
-    const reserve = await getReservationById(reservedId);
-    if (!reserve) {
-      res.status(404).json({ error: 'Reservation not found' });
-    } else {
-      const updatedData: Reservation = req.body;
-      await updateReservationById(reservedId, updatedData);
-      res.status(200).json({ message: 'Reservation updated successfully' });
-    }
+    //user 본인 확인
+    const updatedData: Reservation = req.body;
+    await updateReservationById(reservedId, updatedData);
+    res.status(200).json({ message: 'Reservation updated successfully' });
   } catch (error: any) {
     res.status(500).json({ error: 'Failed to update reservation' });
   }
