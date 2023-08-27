@@ -58,10 +58,9 @@ export async function authenticateUser(
   password: string
 ): Promise<User | null> {
   try {
-    const [user]: any = await pool.query(
-      'SELECT * FROM USER WHERE email = ? AND password = ?',
-      [email, password]
-    );
+    const [user]: any = await pool.query('SELECT * FROM USER WHERE email = ?', [
+      email,
+    ]);
     if (Array.isArray(user) && user.length > 0) {
       const storedPassword = user[0].password;
       // 해시 검증
