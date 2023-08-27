@@ -1,7 +1,7 @@
 import pool from '../config/dbConfig';
 import multer from 'multer';
 import path from 'path';
-import { isDateCloseDay } from '../utils/string-util';
+import { isDateCloseDay, isValidCloseDay } from '../utils/string-util';
 
 // UTC 시간을 한국 시간으로 변환하는 함수
 const convertUtcToKoreaTime = (utcDate: Date): Date => {
@@ -152,7 +152,7 @@ export async function findAvailablePlacesByDate(
   date: string
 ): Promise<Place[]> {
   try {
-    console.log(isDateCloseDay(date, '매주 월/화'));
+    console.log(isValidCloseDay('셋째주 목/토'));
 
     // 해당 날짜에 예약 가능한 예약목록을 가져옴
     const query = `

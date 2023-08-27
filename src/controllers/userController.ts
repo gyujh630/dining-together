@@ -66,9 +66,9 @@ export async function logInHandler(req: Request, res: Response): Promise<void> {
     // 사용자 확인 로직
     const user = await authenticateUser(email, password);
     if (user && !user.isDeleted) {
-      //해당 계정이 존재하고, 삭제계정이 아닌 경우 token 발급
       const token = generateAuthToken(user);
-      res.status(200).json({ token }); // 토큰을 응답으로
+      const userType = user.userType;
+      res.status(200).json({ token, userType });
     } else {
       res.status(401).json({ error: 'No Matching User' }); //일치하는 사용자 정보 없음
     }

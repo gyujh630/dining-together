@@ -17,51 +17,43 @@ export const seoulRegionList = [
 ];
 
 export function isDateCloseDay(date: string, closeDay: string) {
-  if (!isValidCloseDay || closeDay === '없음') return false; //휴무일이 유효하지 않은 형식인 경우 처리
+  if (!isValidCloseDay(closeDay) || closeDay === '없음') return false;
 
   const resultArray = closeDay.split(' ');
-  const closeWeeks = resultArray[0].split('/'); //[매주]
-  const closeDays = resultArray[1].split('/'); //[월,화]
+  const closeWeeks = resultArray[0].split('/');
+  const closeDays = resultArray[1].split('/');
   const closeWeeksAsNumbers = convertStringToNumber(closeWeeks, weekMap);
-  const closeDaysAsNumbers = convertStringToNumber(closeDays, dayMap);
-  console.log(closeDaysAsNumbers, closeWeeksAsNumbers);
-  // date 파싱
-  const dateParts = date.split(/[-/]/);
-  const year = parseInt(dateParts[2], 10);
-  const month = parseInt(dateParts[1], 10) - 1;
-  const day = parseInt(dateParts[0], 10);
 
-  // date를 Date 객체로 변환
+  var parts = date.split('-');
+
+  var year = parseInt('20' + parts[0]);
+  var month = parseInt(parts[1]) - 1;
+  var day = parseInt(parts[2]);
+
   const dateObj = new Date(year, month, day);
+  var options: any = { weekday: 'short', timeZone: 'Asia/Seoul' };
+  var formatter = new Intl.DateTimeFormat('ko-KR', options);
 
-  // date의 요일 추출 (0: 일요일, 1: 월요일, ...)
-  const dayOfWeek = dateObj.getDay(); // 0부터 시작
-
-  // date의 주차 추출 (1: 첫째주, 2: 둘째주, ...)
-  // 한 주의 첫 번째 날이 월요일인 것을 가정
+  var dayOfWeek = formatter.format(dateObj);
   const weekNumber = Math.ceil((day + 1) / 7);
 
-  console.log(dayOfWeek); // 요일
-  console.log(weekNumber); // 주차
-
-  console.log(`요일: ${dayOfWeek}, 주차: ${weekNumber}`);
-
-  // 1. closeWeeks가 매주인 경우에는 요일이 closeDays에 포함되는지만 확인한다. 아니면 false
   if (closeWeeksAsNumbers[0] === 0) {
-    return closeDaysAsNumbers.includes(dayOfWeek); //요일 일치하면 true 반환
+    return closeDay.includes(dayOfWeek);
   } else {
     if (closeWeeksAsNumbers.includes(weekNumber)) {
-      return closeDaysAsNumbers.includes(dayOfWeek);
+      return closeDays.includes(dayOfWeek);
     }
   }
-
-  console.log('휴무일 아님');
-  return false;
 }
 
 export function isValidCloseDay(closeDay: string) {
   if (closeDay === '없음') {
     return true;
+  } else if (
+    closeDay.split(' ').length > 2 ||
+    closeDay.split(' ').length <= 1
+  ) {
+    return false;
   }
   const resultArray = closeDay.split(' ');
   const week = resultArray[0].split('/');

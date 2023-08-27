@@ -15,6 +15,7 @@ import {
   getPlaceByPlaceId,
   findAvailablePlacesByDate,
 } from '../models/PlaceModel';
+import { isDateCloseDay } from '../utils/string-util';
 
 // 예약 가능 공간 조회
 export async function getAvailablePlacesHandler(
@@ -25,8 +26,11 @@ export async function getAvailablePlacesHandler(
     const { storeId, date } = req.query;
     const parsedStoreId = parseInt(storeId as string, 10);
     const store = await getStoreById(parsedStoreId);
+
     if (!store || store.isDeleted) {
       res.status(404).json({ error: 'Store not found' });
+    } else if (isDateCloseDay(date as string, store.closedDays as string)) {
+      res.status(200).json({ isHoliday: true }); //휴무일인 경우
     } else {
       const availablePlaces = await findAvailablePlacesByDate(
         parsedStoreId,
@@ -78,7 +82,7 @@ export async function createReservationHandler(
         return;
       }
 
-      // 예약 생성
+      // 생성
       const newReservation: Reservation = {
         ...req.body, // 기존 필드 유지
         storeId: store.storeId, // storeId 추가
