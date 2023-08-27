@@ -37,12 +37,12 @@ export const verifyToken = (
   next: NextFunction
 ) => {
   try {
-    const decoded: DecodedToken = jwt.verify(
-      req.headers.authorization as string,
-      process.env.JWT_SECRET as Secret
-    ) as DecodedToken;
+    const tokenString = (req.headers.authorization as string).split(' ');
 
-    console.log(decoded);
+    const decoded = jwt.verify(
+      tokenString[1],
+      process.env.JWT_SECRET as Secret
+    );
 
     // 로그아웃된 경우
     if (revokedTokens.has(req.headers.authorization as string)) {
@@ -52,7 +52,7 @@ export const verifyToken = (
       });
     }
 
-    req.decoded = decoded;
+    // req.decoded = decoded;
     return next();
   } catch (error: any) {
     if (error.name === 'TokenExpiredError') {
