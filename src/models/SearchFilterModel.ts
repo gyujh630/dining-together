@@ -26,6 +26,7 @@ export const getAllStoresBySearch = async (
 
 // 날짜, 지역, 음식유형, 인당 가격, 분위기, 룸 유무 필터 조회
 export const getAllStoresByFilter = async (
+  selectedDate: string | undefined,
   location: string | undefined,
   foodCategory: string | undefined,
   cost: number | undefined,
@@ -34,19 +35,57 @@ export const getAllStoresByFilter = async (
 ): Promise<Store[]> => {
   try {
     const values = [];
+    const filterConditions = [];
+    const groupByClause = 'GROUP BY s.storeId';
 
-    if (location) values.push(`location = '${location}'`);
-    if (foodCategory) values.push(`foodCategory = '${foodCategory}'`);
-    if (cost) values.push(`cost = ${cost}`);
-    if (mood) values.push(`mood LIKE '%${mood}%'`);
-    if (isRoom) values.push(`isRoom = ${isRoom}`);
+    if (selectedDate) {
+      values.push(selectedDate);
+      filterConditions.push(`p.placeId NOT IN (
+        SELECT r.placeId
+        FROM RESERVATION r
+        WHERE r.reservedDate = ?
+        AND (r.status != '예약취소') 
+      )`);
+    }
+
+    if (location) {
+      values.push(location);
+      filterConditions.push(`s.location = ?`);
+    }
+
+    if (foodCategory) {
+      values.push(foodCategory);
+      filterConditions.push(`s.foodCategory = ?`);
+    }
+
+    if (cost) {
+      values.push(cost);
+      filterConditions.push(`s.cost = ?`);
+    }
+
+    if (mood) {
+      values.push(`%${mood}%`);
+      filterConditions.push(`s.mood LIKE ?`);
+    }
+
+    if (isRoom) {
+      values.push(isRoom);
+      filterConditions.push(`s.isRoom = ?`);
+    }
 
     const filterQuery = `
-      SELECT STORE.*, STOREIMAGE.imageUrl 
-      FROM STORE
-      LEFT JOIN STOREIMAGE ON STORE.storeId = STOREIMAGE.storeId  
-      WHERE ${values.join(' AND ')}
-      `;
+      SELECT s.*, MAX(si.imageUrl) as imageUrl
+      FROM STORE s
+      LEFT JOIN STOREIMAGE si ON s.storeId = si.storeId  
+      ${values.length > 0 ? 'INNER JOIN PLACE p ON s.storeId = p.storeId' : ''}
+      ${filterConditions.length > 0 ? 'WHERE' : ''} ${filterConditions.join(
+        ' AND '
+      )}
+      ${groupByClause}
+    `;
+
+    console.log(filterQuery);
+    console.log(values);
 
     const [rows] = await pool.query(filterQuery, values);
 

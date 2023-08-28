@@ -46,13 +46,18 @@ export interface Store {
   description: string;
   keyword: string;
   mood: string;
-  operatingHours: string;
+  operatingHours: {
+    openingHour: string;
+    openingMinute: string;
+    closingHour: string;
+    closingMinute: string;
+  };
   closedDays: string;
   foodCategory: string;
   maxNum: number;
   cost: number;
   isParking: number; // 주차공간 => 0 : 없음, 1 : 있음
-  isRoom: number; // 룸 => 0 : 없음, 1 : 있음
+  isRoom: boolean;
   createdAt?: Date; // 자동 생성
   modifiedAt?: Date; // 자동 업데이트
   averageRating: number;
@@ -85,7 +90,7 @@ export const createStore = async (
       store.description,
       store.keyword,
       store.mood,
-      store.operatingHours,
+      JSON.stringify(store.operatingHours),
       store.closedDays,
       store.foodCategory,
       store.maxNum,
@@ -95,6 +100,9 @@ export const createStore = async (
       koreaCreatedAt,
       koreaModifiedAt,
     ];
+
+    console.log(query);
+    console.log(values);
 
     const [result] = await pool.query(query, values);
     const storeId = (result as any).insertId as number;
@@ -325,7 +333,7 @@ export const getHomeWhenNotLogin = async (): Promise<any> => {
   }
 };
 
-// 공간 추가 시 공간 유형이 룸인 경우 isRoom 1로 업뎃
+// 공간 추가 시 공간 유형이 룸인 경우 isRoom true로 업뎃
 export const updateIsRoomTrue = async (storeId: number): Promise<void> => {
   try {
     const nowUtc = new Date();
@@ -333,7 +341,7 @@ export const updateIsRoomTrue = async (storeId: number): Promise<void> => {
 
     const updateStoreQuery = `
       UPDATE STORE
-      SET isRoom = 1, modifiedAt = ?
+      SET isRoom = TRUE, modifiedAt = ?
       WHERE storeId = ?;
     `;
 

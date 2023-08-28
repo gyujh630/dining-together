@@ -16,16 +16,16 @@ import {
   getImageHandler,
 } from '../controllers/StoreImageController';
 import {
-  searchStores,
-  filterStores,
+  searchStoresHandler,
+  filterStoresHandler,
 } from '../controllers/SearchFilterController';
 import { upload } from '../config/uploadConfig';
 import { getReservationsByStoreIdHandler } from '../controllers/ReservationController';
 const storeRouter = express.Router();
 
 // SEARCH & FILTER
-storeRouter.get('/search', searchStores);
-storeRouter.get('/filter', filterStores);
+storeRouter.get('/search', searchStoresHandler);
+storeRouter.get('/filter', filterStoresHandler);
 
 // STORE
 storeRouter.post('/', upload.array('storeImage', 3), createStoreHandler);
