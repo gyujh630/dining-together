@@ -60,21 +60,10 @@ export async function createReservationHandler(
     const [storeResult]: any = await pool.query(findStoreIdQuery, [placeId]); // placeId를 사용하여 storeId를 찾기
     if (!user || user.isDeleted) {
       res.status(404).json({ error: 'User not found' });
-    } else if (!place || place.isDeleted) {
-      res.status(404).json({ error: 'Place not found' });
     } else if (storeResult.length === 0) {
       res.status(404).json({ error: 'Store not found' });
     } else {
       const store: any = await getStoreById(Number(storeResult[0].storeId));
-      if (
-        people > store.maxNum ||
-        people < 1 ||
-        people > place.maxPeople ||
-        people < place.minPeople
-      ) {
-        res.status(400).json({ error: '인원수가 유효하지 않습니다.' });
-        return;
-      }
       const available = await isAvailableReservation(placeId, reservedDate);
 
       if (!available) {

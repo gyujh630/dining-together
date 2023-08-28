@@ -127,3 +127,26 @@ export const isPasswordValid = function (password: string): boolean {
     /^.*(?=^.{8,15}$)(?=.*\d)(?=.*[a-zA-Z])(?=.*[!@#$%^&+=]).*$/;
   return passwordRegEx.test(password);
 };
+
+export const stringToDate = (date: string) => {
+  const parts = date.split('-');
+  const year = 2000 + parseInt(parts[0]);
+  const month = parseInt(parts[1]) - 1;
+  const day = parseInt(parts[2]);
+  return new Date(year, month, day);
+};
+
+export function toKoreaTime(date: Date) {
+  const koreaTime = new Intl.DateTimeFormat('ko-KR', {
+    timeZone: 'Asia/Seoul',
+    hour12: false,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  }).format(date);
+
+  return koreaTime;
+}

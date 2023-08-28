@@ -233,6 +233,7 @@ export const getHomeWhenLogin = async (
     //지역 랜덤 추천 쿼리
     const regionRandomQuery = `
       SELECT storeId, storeName, foodCategory FROM STORE
+      LEFT JOIN STOREIMAGE ON STORE.storeId = STOREIMAGE.storeId
       WHERE location = ?
       ORDER BY RAND()
       LIMIT 10;
