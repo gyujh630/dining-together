@@ -58,10 +58,9 @@ export async function authenticateUser(
   password: string
 ): Promise<User | null> {
   try {
-    const [user]: any = await pool.query(
-      'SELECT * FROM USER WHERE email = ? AND password = ?',
-      [email, password]
-    );
+    const [user]: any = await pool.query('SELECT * FROM USER WHERE email = ?', [
+      email,
+    ]);
     if (Array.isArray(user) && user.length > 0) {
       const storedPassword = user[0].password;
       // 해시 검증
@@ -143,19 +142,3 @@ export async function updateUserById(
     throw new Error('Error updating user');
   }
 }
-
-/*
-// 회원 삭제
-export async function deleteUserById(userId: number): Promise<void> {
-  const deleteUserQuery = `
-    DELETE FROM USER WHERE userId = ?
-  `;
-
-  try {
-    await pool.query(deleteUserQuery, [userId]);
-  } catch (error) {
-    console.log(error);
-    throw new Error('Error deleting user');
-  }
-}
-*/

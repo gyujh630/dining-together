@@ -15,6 +15,7 @@ import {
   getPlaceByPlaceId,
   findAvailablePlacesByDate,
 } from '../models/PlaceModel';
+import { isDateCloseDay } from '../utils/string-util';
 
 // 예약 가능 공간 조회
 export async function getAvailablePlacesHandler(
@@ -24,10 +25,12 @@ export async function getAvailablePlacesHandler(
   try {
     const { storeId, date } = req.query;
     const parsedStoreId = parseInt(storeId as string, 10);
-
     const store = await getStoreById(parsedStoreId);
+
     if (!store || store.isDeleted) {
       res.status(404).json({ error: 'Store not found' });
+    } else if (isDateCloseDay(date as string, store.closedDays as string)) {
+      res.status(200).json({ isHoliday: true }); //휴무일인 경우
     } else {
       const availablePlaces = await findAvailablePlacesByDate(
         parsedStoreId,
@@ -56,11 +59,11 @@ export async function createReservationHandler(
     const place = await getPlaceByPlaceId(placeId);
     const [storeResult]: any = await pool.query(findStoreIdQuery, [placeId]); // placeId를 사용하여 storeId를 찾기
     if (!user || user.isDeleted) {
-      res.status(404).send('User not found');
+      res.status(404).json({ error: 'User not found' });
     } else if (!place || place.isDeleted) {
-      res.status(404).send('Place not found');
+      res.status(404).json({ error: 'Place not found' });
     } else if (storeResult.length === 0) {
-      res.status(404).send('Store not found');
+      res.status(404).json({ error: 'Store not found' });
     } else {
       const store: any = await getStoreById(Number(storeResult[0].storeId));
       if (
@@ -69,17 +72,17 @@ export async function createReservationHandler(
         people > place.maxPeople ||
         people < place.minPeople
       ) {
-        res.status(400).send('인원수가 유효하지 않습니다.');
+        res.status(400).json({ error: '인원수가 유효하지 않습니다.' });
         return;
       }
       const available = await isAvailableReservation(placeId, reservedDate);
 
       if (!available) {
-        res.status(409).send('이미 예약되어 있는 공간입니다.');
+        res.status(409).json({ error: '이미 예약되어 있는 공간입니다.' });
         return;
       }
 
-      // 예약 생성
+      // 생성
       const newReservation: Reservation = {
         ...req.body, // 기존 필드 유지
         storeId: store.storeId, // storeId 추가
@@ -119,7 +122,7 @@ export async function getReservationsByUserIdHandler(
     const userId = parseInt(req.params.userId, 10);
     const user = await getUserById(userId);
     if (!user) {
-      res.status(404).send('User not found');
+      res.status(404).json({ error: 'User not found' });
     } else {
       const reservations = await getReservationsByUserId(userId);
       res.status(200).json(reservations);
@@ -138,7 +141,7 @@ export async function getReservationsByStoreIdHandler(
     const storeId = parseInt(req.params.storeId, 10);
     const store = await getStoreById(storeId);
     if (!store) {
-      res.status(404).send('Store not found');
+      res.status(404).json({ error: 'Store not found' });
     } else {
       const reservations = await getReservationsByStoreId(storeId);
       res.status(200).json(reservations);
@@ -168,14 +171,10 @@ export async function updateReservationHandler(
 ): Promise<void> {
   try {
     const reservedId: number = parseInt(req.params.reservedId, 10);
-    const reserve = await getReservationById(reservedId);
-    if (!reserve) {
-      res.status(404).json({ error: 'Reservation not found' });
-    } else {
-      const updatedData: Reservation = req.body;
-      await updateReservationById(reservedId, updatedData);
-      res.status(200).json({ message: 'Reservation updated successfully' });
-    }
+    //user 본인 확인
+    const updatedData: Reservation = req.body;
+    await updateReservationById(reservedId, updatedData);
+    res.status(200).json({ message: 'Reservation updated successfully' });
   } catch (error: any) {
     res.status(500).json({ error: 'Failed to update reservation' });
   }

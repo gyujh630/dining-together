@@ -1,6 +1,7 @@
 import pool from '../config/dbConfig';
 import multer from 'multer';
 import path from 'path';
+import { isDateCloseDay, isValidCloseDay } from '../utils/string-util';
 
 // UTC 시간을 한국 시간으로 변환하는 함수
 const convertUtcToKoreaTime = (utcDate: Date): Date => {
@@ -151,8 +152,7 @@ export async function findAvailablePlacesByDate(
   date: string
 ): Promise<Place[]> {
   try {
-    // 가게에 속한 모든 공간을 가져옴
-    const places: Place[] = await getPlacesByStoreId(storeId);
+    console.log(isValidCloseDay('셋째주 목/토'));
 
     // 해당 날짜에 예약 가능한 예약목록을 가져옴
     const query = `
@@ -167,8 +167,6 @@ export async function findAvailablePlacesByDate(
       )
     `;
 
-    // AND p.maxPeople >= ?
-    // AND p.minPeople <= ?
     const [rows] = await pool.query(query, [storeId, date]);
 
     return rows as Place[];
