@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
-import { getHomeWhenLogin, getHomeWhenNotLogin, getUserById } from '../models';
+import { getHomeWhenLogin, getHomeWhenNotLogin } from '../models';
+import { decodeToken } from '../utils/jwt-util';
 
 // 가게 전체 조회
 export const getHomeController = async (
@@ -7,32 +8,26 @@ export const getHomeController = async (
   res: Response
 ): Promise<void> => {
   try {
-    const { userId, userType } = req.query;
-    // const parseUserId = parseInt(userId, 10)
+    // 요청 헤더에서 토큰을 가져오기
+    const token = req.headers.authorization;
+    if (token) {
+      const authToken = decodeToken(token);
+      const userId = authToken.userId;
+      const userType = authToken.userType;
 
-    // userType과 userId가 정의되지 않은 경우 (로그인x)
-    if (userType === undefined && userId === undefined) {
-      const a = await getHomeWhenNotLogin(); // 비로그인 시 화면 조회
-      res.status(200).json(a);
-    } else if (typeof userId === 'string') {
-      const user = await getUserById(parseInt(userId, 10));
-      if (!user) {
-        res.status(404).json({ error: `User not found` });
+      if (userType === 2) {
+        const data = await getHomeWhenNotLogin();
+        res.status(200).json(data);
+      } else if (userType === 1) {
+        const data = await getHomeWhenLogin(userId, userType);
+        res.status(200).json(data);
       } else {
-        //user가 유효함
-        if (userType === '2') {
-          const a = await getHomeWhenNotLogin();
-          res.status(200).json(a);
-        } else if (userType === '1') {
-          const a = await getHomeWhenLogin(
-            parseInt(userId, 10),
-            parseInt(userType, 10)
-          );
-          res.status(200).json(a);
-        } else {
-          res.status(400).json({ error: '유효하지 않은 userType 값입니다.' });
-        }
+        res.status(400).json({ error: '유효하지 않은 userType 값입니다.' });
       }
+    } else {
+      // 토큰이 없는 경우 (비로그인 상태)
+      const data = await getHomeWhenNotLogin();
+      res.status(200).json(data);
     }
   } catch (error) {
     console.error(error);
