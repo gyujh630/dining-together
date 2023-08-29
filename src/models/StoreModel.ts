@@ -80,7 +80,8 @@ export const createStore = async (
 
     for (const image of images) {
       const imagePath = image.filename;
-      await addImageToStore(storeId, imagePath);
+      const imageURL = `uploads/${imagePath}`;
+      await addImageToStore(storeId, imageURL);
     }
 
     return storeId;

@@ -14,10 +14,12 @@ export const createStoreHandler = async (
 ): Promise<void> => {
   try {
     const newStore: Store = req.body;
+
     if (req.files && Array.isArray(req.files)) {
       const storeImages: Express.Multer.File[] = req.files;
 
       const storeId = await createStore(newStore, storeImages);
+
       res.status(201).json({ storeId });
     }
   } catch (error) {

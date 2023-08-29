@@ -18,7 +18,7 @@ export const createPlaceHandler = async (
     const newPlace: Place = req.body;
 
     if (req.file) {
-      newPlace.placeImage = req.file.filename;
+      newPlace.placeImage = `uploads/${req.file.filename}`;
     }
 
     const placeId = await createPlace(newPlace);
