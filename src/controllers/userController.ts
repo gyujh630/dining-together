@@ -68,7 +68,8 @@ export async function logInHandler(req: Request, res: Response): Promise<void> {
     if (user && !user.isDeleted) {
       const token = generateAuthToken(user);
       const userType = user.userType;
-      res.status(200).json({ token, userType });
+      const userId = user.userId;
+      res.status(200).json({ token, userId, userType });
     } else {
       res.status(401).json({ error: 'No Matching User' }); //일치하는 사용자 정보 없음
     }

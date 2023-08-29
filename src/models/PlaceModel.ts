@@ -128,8 +128,6 @@ export async function findAvailablePlacesByDate(
   date: string
 ): Promise<Place[]> {
   try {
-    console.log(isValidCloseDay('셋째주 목/토'));
-
     // 해당 날짜에 예약 가능한 예약목록을 가져옴
     const query = `
       SELECT DISTINCT p.*

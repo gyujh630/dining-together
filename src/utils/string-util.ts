@@ -128,9 +128,32 @@ export const isPasswordValid = function (password: string): boolean {
   return passwordRegEx.test(password);
 };
 
+export const stringToDate = (date: string) => {
+  const parts = date.split('-');
+  const year = 2000 + parseInt(parts[0]);
+  const month = parseInt(parts[1]) - 1;
+  const day = parseInt(parts[2]);
+  return new Date(year, month, day);
+};
+
+export function toKoreaTime(date: Date) {
+  const koreaTime = new Intl.DateTimeFormat('ko-KR', {
+    timeZone: 'Asia/Seoul',
+    hour12: false,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  }).format(date);
+
+  return koreaTime;
+}
+
 // UTC 시간을 한국 시간으로 변환하는 함수
 export const convertUtcToKoreaTime = (utcDate: Date): Date => {
   const koreaOffset = 9 * 60 * 60 * 1000; // 한국 : UTC+9
-  const koreaTime = new Date(utcDate.getTime() + koreaOffset);
-  return koreaTime;
+  const koreanTime = new Date(utcDate.getTime() + koreaOffset);
+  return koreanTime;
 };

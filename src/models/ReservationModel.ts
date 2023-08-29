@@ -1,7 +1,8 @@
+import { now } from 'moment';
 import pool from '../config/dbConfig';
-import Place from './PlaceModel';
-import { getStoreById } from './StoreModel';
-export interface Reservation {
+import { stringToDate, toKoreaTime } from '../utils/string-util';
+import { RowDataPacket, FieldPacket } from 'mysql2/promise';
+export interface Reservation extends RowDataPacket {
   reservedId: number;
   userId: number;
   storeId: number;
@@ -9,10 +10,11 @@ export interface Reservation {
   createdAt: string;
   modifiedAt: string;
   people: number;
-  reservedDate: Date;
+  reservedDate: string;
   visitTime: string;
   status: string;
 }
+interface IFoods extends Array<Reservation> {}
 
 //예약 생성
 export async function createReservation(
@@ -44,9 +46,30 @@ export async function getReservationById(
   reservedId: number
 ): Promise<Reservation | null> {
   const getReservationByIdQuery = `
-    SELECT reservedId, userId, storeId, placeId, people, DATE_FORMAT(reservedDate, '%y-%m-%d') as reservedDate, visitTime, status
-    FROM RESERVATION
-    WHERE reservedId = ?
+    SELECT
+    R.reservedId,
+    R.userId,
+    R.storeId,
+    R.placeId,
+    R.people,
+    DATE_FORMAT(R.reservedDate, '%y-%m-%d') as reservedDate,
+    R.visitTime,
+    R.status,
+    S.storeName,
+    S.location,
+    S.foodCategory,
+    SI.imageUrl,
+    P.placeName,
+    P.placeType
+    FROM
+    RESERVATION R
+    JOIN
+    STORE S ON R.storeId = S.storeId
+    JOIN
+    PLACE P ON R.placeId = P.placeId
+    LEFT JOIN
+    STOREIMAGE SI ON R.storeId = SI.storeId
+    WHERE R.reservedId = ?
   `;
 
   try {
@@ -62,18 +85,69 @@ export async function getReservationById(
 }
 
 // 회원의 예약목록조회
-export async function getReservationsByUserId(
-  userId: number
-): Promise<Reservation[]> {
+export async function getReservationsByUserId(userId: number): Promise<any> {
   const getReservationsQuery = `
-    SELECT reservedId, userId, storeId, placeId, people, DATE_FORMAT(reservedDate, '%y-%m-%d') as reservedDate, visitTime, status
-    FROM RESERVATION
-    WHERE userId = ?
+    SELECT
+    R.reservedId,
+    R.userId,
+    R.storeId,
+    R.placeId,
+    R.people,
+    DATE_FORMAT(R.reservedDate, '%y-%m-%d') as reservedDate,
+    R.visitTime,
+    R.status,
+    S.storeName,
+    S.location,
+    S.foodCategory,
+    SI.imageUrl,
+    P.placeName,
+    P.placeType
+    FROM
+    RESERVATION R
+    JOIN
+    STORE S ON R.storeId = S.storeId
+    JOIN
+    PLACE P ON R.placeId = P.placeId
+    LEFT JOIN
+    STOREIMAGE SI ON R.storeId = SI.storeId
+    WHERE R.userId = ?
   `;
 
   try {
-    const [results] = await pool.query(getReservationsQuery, [userId]);
-    return results as Reservation[];
+    const [reservations]: [Reservation[], FieldPacket[]] = await pool.query(
+      getReservationsQuery,
+      [userId]
+    );
+    const offset = 1000 * 60 * 60 * 9;
+    const oneDayOffSet = 1000 * 60 * 60 * 24;
+    const koreaNow = new Date(new Date().getTime() + offset);
+
+    const resultsByStatus = {
+      예약대기: [] as RowDataPacket,
+      방문예정: [] as RowDataPacket,
+      방문완료: [] as RowDataPacket,
+      예약취소: [] as RowDataPacket,
+    };
+    for (var i = 0; i < reservations.length; i++) {
+      const reservation = reservations[i];
+      if (reservation.status === '예약대기') {
+        resultsByStatus['예약대기'].push(reservation);
+      } else if (reservation.status === '예약취소') {
+        resultsByStatus['예약취소'].push(reservation);
+      } else if (reservation.status === '예약확정') {
+        const koreaReservedDate = new Date(
+          stringToDate(reservation.reservedDate).getTime() +
+            offset +
+            oneDayOffSet
+        );
+        if (koreaNow <= koreaReservedDate) {
+          resultsByStatus['방문예정'].push(reservation);
+        } else {
+          resultsByStatus['방문완료'].push(reservation);
+        }
+      }
+    }
+    return resultsByStatus as any;
   } catch (error) {
     console.error(error);
     throw new Error('Error fetching reservations');
@@ -85,14 +159,68 @@ export async function getReservationsByStoreId(
   storeId: number
 ): Promise<Reservation[]> {
   const getReservationsQuery = `
-    SELECT reservedId, userId, storeId, placeId, people, DATE_FORMAT(reservedDate, '%y-%m-%d') as reservedDate, visitTime, status
-    FROM RESERVATION
-    WHERE storeId = ?
+    SELECT
+    R.reservedId,
+    R.userId,
+    R.storeId,
+    R.placeId,
+    R.people,
+    DATE_FORMAT(R.reservedDate, '%y-%m-%d') as reservedDate,
+    R.visitTime,
+    R.status,
+    S.storeName,
+    S.location,
+    S.foodCategory,
+    SI.imageUrl,
+    P.placeName,
+    P.placeType
+    FROM
+    RESERVATION R
+    JOIN
+    STORE S ON R.storeId = S.storeId
+    JOIN
+    PLACE P ON R.placeId = P.placeId
+    LEFT JOIN
+    STOREIMAGE SI ON R.storeId = SI.storeId
+    WHERE
+    R.storeId = ?;
   `;
 
   try {
-    const [results] = await pool.query(getReservationsQuery, [storeId]);
-    return results as Reservation[];
+    const [reservations]: [Reservation[], FieldPacket[]] = await pool.query(
+      getReservationsQuery,
+      [storeId]
+    );
+    const offset = 1000 * 60 * 60 * 9;
+    const oneDayOffSet = 1000 * 60 * 60 * 24;
+    const koreaNow = new Date(new Date().getTime() + offset);
+
+    const resultsByStatus = {
+      예약대기: [] as RowDataPacket,
+      방문예정: [] as RowDataPacket,
+      방문완료: [] as RowDataPacket,
+      예약취소: [] as RowDataPacket,
+    };
+    for (var i = 0; i < reservations.length; i++) {
+      const reservation = reservations[i];
+      if (reservation.status === '예약대기') {
+        resultsByStatus['예약대기'].push(reservation);
+      } else if (reservation.status === '예약취소') {
+        resultsByStatus['예약취소'].push(reservation);
+      } else if (reservation.status === '예약확정') {
+        const koreaReservedDate = new Date(
+          stringToDate(reservation.reservedDate).getTime() +
+            offset +
+            oneDayOffSet
+        );
+        if (koreaNow <= koreaReservedDate) {
+          resultsByStatus['방문예정'].push(reservation);
+        } else {
+          resultsByStatus['방문완료'].push(reservation);
+        }
+      }
+    }
+    return resultsByStatus as any;
   } catch (error) {
     console.error(error);
     throw new Error('Error fetching reservations by storeId');
