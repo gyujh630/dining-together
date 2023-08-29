@@ -203,9 +203,8 @@ export const getHomeWhenLogin = async (
   try {
     //지역 랜덤 추천 쿼리
     const regionRandomQuery = `
-      SELECT storeId, storeName, foodCategory FROM STORE
-      LEFT JOIN STOREIMAGE ON STORE.storeId = STOREIMAGE.storeId
-      WHERE location = ?
+      SELECT S.storeId, S.storeName, S.foodCategory FROM STORE S
+      WHERE S.location = ? AND S.isDeleted = 0
       ORDER BY RAND()
       LIMIT 10;
     `;
@@ -258,8 +257,16 @@ export const getHomeWhenNotLogin = async (): Promise<any> => {
   try {
     //지역 랜덤 추천 쿼리
     const regionRandomQuery = `
-      SELECT storeId, storeName, foodCategory FROM STORE
-      WHERE location = ?
+      SELECT S.storeId, S.storeName, S.foodCategory, SI.imageUrl
+      FROM STORE S
+      LEFT JOIN
+      STOREIMAGE SI ON S.storeId = SI.storeId
+      WHERE S.location = ? AND S.isDeleted = 0
+      AND SI.imageId = (
+        SELECT MIN(imageId)
+        FROM STOREIMAGE
+        WHERE storeId = S.storeId
+        )
       ORDER BY RAND()
       LIMIT 10;
     `;
@@ -285,9 +292,10 @@ export const getHomeWhenNotLogin = async (): Promise<any> => {
       LIMIT 10;
     `;
 
-    const [regionRandomList] = await pool.query(regionRandomQuery, [
-      randomRegion,
-    ]);
+    // const [regionRandomList] = await pool.query(regionRandomQuery, [
+    //   randomRegion,
+    // ]);
+    const [regionRandomList] = await pool.query(regionRandomQuery, ['강남']);
     const [bigList] = await pool.query(bigStoreQuery);
     const [newStoreList] = await pool.query(newStoreQuery);
 
