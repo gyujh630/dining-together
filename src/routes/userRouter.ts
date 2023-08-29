@@ -14,7 +14,7 @@ import { getReservationsByUserIdHandler } from '../controllers/ReservationContro
 
 const userRouter = express.Router();
 
-userRouter.get('/', getAllUserHandler);
+userRouter.get('/', verifyToken, getAllUserHandler);
 userRouter.post('/signup', createUserHandler);
 userRouter.get('/check', checkEmailHandler);
 userRouter.post('/login', logInHandler);
