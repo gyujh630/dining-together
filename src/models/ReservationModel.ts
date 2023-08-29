@@ -1,4 +1,3 @@
-import { now } from 'moment';
 import pool from '../config/dbConfig';
 import { stringToDate, toKoreaTime } from '../utils/string-util';
 import { RowDataPacket, FieldPacket } from 'mysql2/promise';
