@@ -9,12 +9,9 @@ export const searchStoresHandler = async (
   req: Request,
   res: Response
 ): Promise<void> => {
-  const { storeName, keyword } = req.query;
+  const { searchItem } = req.query;
   try {
-    const searchResultes = await getAllStoresBySearch(
-      storeName as string | undefined,
-      keyword as string | undefined
-    );
+    const searchResultes = await getAllStoresBySearch(searchItem as string);
     res.status(200).json(searchResultes);
   } catch (error) {
     console.error(error);

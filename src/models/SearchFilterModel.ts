@@ -3,8 +3,7 @@ import Store from './StoreModel';
 
 // 식당명, 키워드 검색 조회
 export const getAllStoresBySearch = async (
-  storeName: string | undefined,
-  keyword: string | undefined
+  searchItem: string
 ): Promise<Store[]> => {
   try {
     const searchQuery = `
@@ -14,7 +13,7 @@ export const getAllStoresBySearch = async (
       WHERE storeName LIKE ? OR keyword LIKE ?;
     `;
 
-    const values = [`%${storeName}%`, `%${keyword}%`];
+    const values = [`%${searchItem}%`];
 
     const [rows] = await pool.query(searchQuery, values);
     return rows as Store[];
