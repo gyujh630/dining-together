@@ -16,9 +16,7 @@ export const createStoreHandler = async (
   try {
     const newStore: Store = req.body;
     if (req.files && Array.isArray(req.files)) {
-      const storeImages: string[] = req.files.map(
-        (file: Express.Multer.File) => file.path
-      );
+      const storeImages: Express.Multer.File[] = req.files;
 
       const storeId = await createStore(newStore, storeImages);
       res.status(201).json({ storeId });
