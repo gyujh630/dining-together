@@ -13,7 +13,7 @@ export const getAllStoresBySearch = async (
       WHERE storeName LIKE ? OR keyword LIKE ?;
     `;
 
-    const values = [`%${searchItem}%`];
+    const values = [`%${searchItem}%`, `%${searchItem}%`];
 
     const [rows] = await pool.query(searchQuery, values);
     return rows as Store[];
