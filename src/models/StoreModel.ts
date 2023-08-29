@@ -95,9 +95,10 @@ export const createStore = async (
 export const getAllStores = async (): Promise<Store[]> => {
   try {
     const query = `
-      SELECT STORE.*, STOREIMAGE.imageUrl
-      FROM STORE
-      LEFT JOIN STOREIMAGE ON STORE.storeId = STOREIMAGE.storeId;
+      SELECT s.*, MIN(si.imageUrl) AS imageUrl
+      FROM STORE s
+      LEFT JOIN STOREIMAGE si ON s.storeId = si.storeId
+      GROUP BY s.storeId;
     `;
     const [rows] = await pool.query(query);
     return rows as Store[];
