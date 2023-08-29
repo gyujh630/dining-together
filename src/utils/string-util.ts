@@ -127,3 +127,10 @@ export const isPasswordValid = function (password: string): boolean {
     /^.*(?=^.{8,15}$)(?=.*\d)(?=.*[a-zA-Z])(?=.*[!@#$%^&+=]).*$/;
   return passwordRegEx.test(password);
 };
+
+// UTC 시간을 한국 시간으로 변환하는 함수
+export const convertUtcToKoreaTime = (utcDate: Date): Date => {
+  const koreaOffset = 9 * 60 * 60 * 1000; // 한국 : UTC+9
+  const koreaTime = new Date(utcDate.getTime() + koreaOffset);
+  return koreaTime;
+};

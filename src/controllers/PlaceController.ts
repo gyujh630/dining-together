@@ -6,8 +6,8 @@ import {
   getPlacesByStoreId,
   getPlaceByPlaceId,
   updatePlace,
-  upload,
 } from '../models/PlaceModel';
+import { upload } from '../config/uploadConfig';
 import { updateIsRoomTrue } from '../models/StoreModel';
 
 export const createPlaceHandler = (req: Request, res: Response): void => {

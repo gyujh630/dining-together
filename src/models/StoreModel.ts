@@ -3,34 +3,7 @@ import multer from 'multer';
 import path from 'path';
 import { Request } from 'express';
 import { StoreImage, addImageToStore } from './StoreImageModel';
-import { seoulRegionList } from '../utils/string-util';
-
-// UTC 시간을 한국 시간으로 변환하는 함수
-const convertUtcToKoreaTime = (utcDate: Date): Date => {
-  const koreaOffset = 9 * 60 * 60 * 1000; // 한국 : UTC+9
-  const koreaTime = new Date(utcDate.getTime() + koreaOffset);
-  return koreaTime;
-};
-
-// 파일 저장 경로 설정
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, 'uploads/stores');
-  },
-  filename: (req, file, cb) => {
-    const extname = path.extname(file.originalname);
-    const filename = `${Date.now()}_${Math.floor(
-      Math.random() * 10000
-    )}${extname}`;
-    cb(null, filename);
-  },
-});
-
-// 파일 업로드 설정
-export const upload = multer({
-  storage: storage,
-  limits: { fileSize: 10 * 1024 * 1024 },
-});
+import { seoulRegionList, convertUtcToKoreaTime } from '../utils/string-util';
 
 export interface Store {
   storeId?: number; // 자동 생성
@@ -100,9 +73,6 @@ export const createStore = async (
       koreaCreatedAt,
       koreaModifiedAt,
     ];
-
-    console.log(query);
-    console.log(values);
 
     const [result] = await pool.query(query, values);
     const storeId = (result as any).insertId as number;
@@ -191,15 +161,15 @@ export const updateStore = async (
       throw new Error('No fields to update');
     }
 
+    const values = Object.entries(updatedStore)
+      .filter(([key, value]) => value !== undefined && key !== 'storeId')
+      .map(([key, value]) => value);
+
     const updateStoreQuery = `
       UPDATE STORE
       SET ${updateFields}, modifiedAt = ?
       WHERE storeId = ?;
     `;
-
-    const values = Object.entries(updatedStore)
-      .filter(([key, value]) => value !== undefined && key !== 'storeId')
-      .map(([key, value]) => value);
 
     values.push(koreaModifiedAt, storeId);
     await pool.query(updateStoreQuery, values);

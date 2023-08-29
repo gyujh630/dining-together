@@ -21,6 +21,7 @@ import {
 } from '../controllers/SearchFilterController';
 import { upload } from '../config/uploadConfig';
 import { getReservationsByStoreIdHandler } from '../controllers/ReservationController';
+
 const storeRouter = express.Router();
 
 // SEARCH & FILTER
@@ -28,7 +29,7 @@ storeRouter.get('/search', searchStoresHandler);
 storeRouter.get('/filter', filterStoresHandler);
 
 // STORE
-storeRouter.post('/', upload.array('storeImage', 3), createStoreHandler);
+storeRouter.post('/', upload.array('storeImage', 5), createStoreHandler);
 storeRouter.get('/', getAllStoresHandler);
 storeRouter.get('/:storeId', getStoreHandler);
 storeRouter.put('/:storeId', upload.single('storeImage'), updateStoreHandler);

@@ -1,34 +1,11 @@
 import pool from '../config/dbConfig';
 import multer from 'multer';
 import path from 'path';
-import { isDateCloseDay, isValidCloseDay } from '../utils/string-util';
-
-// UTC 시간을 한국 시간으로 변환하는 함수
-const convertUtcToKoreaTime = (utcDate: Date): Date => {
-  const koreaOffset = 9 * 60 * 60 * 1000; // 한국 : UTC+9
-  const koreaTime = new Date(utcDate.getTime() + koreaOffset);
-  return koreaTime;
-};
-
-// 파일 저장 경로 설정
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, 'uploads/places/');
-  },
-  filename: (req, file, cb) => {
-    const extname = path.extname(file.originalname);
-    const filename = `${Date.now()}_${Math.floor(
-      Math.random() * 10000
-    )}${extname}`;
-    cb(null, filename);
-  },
-});
-
-// 파일 업로드 설정
-export const upload = multer({
-  storage: storage,
-  limits: { fileSize: 10 * 1024 * 1024 },
-});
+import {
+  isDateCloseDay,
+  isValidCloseDay,
+  convertUtcToKoreaTime,
+} from '../utils/string-util';
 
 export interface Place {
   placeId?: number; // 자동 생성
@@ -131,14 +108,13 @@ export const updatePlace = async (
       .filter(([key, value]) => value !== undefined && key !== 'placeId')
       .map(([key, value]) => value);
 
-    values.push(koreaModifiedAt, placeId);
-
     const updatePlaceQuery = `
       UPDATE PLACE
       SET ${updateFields}, modifiedAt = ?
       WHERE placeId = ?;
     `;
 
+    values.push(koreaModifiedAt, placeId);
     await pool.query(updatePlaceQuery, values);
   } catch (error) {
     console.error(error);
