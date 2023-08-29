@@ -16,6 +16,7 @@ export const addImageToStore = async (
       INSERT INTO STOREIMAGE (imageUrl, storeId) VALUES (?, ?);
     `;
     const [result] = await pool.query(insertImageQuery, [imageUrl, storeId]);
+
     return (result as any).insertId as number;
   } catch (error) {
     console.error(error);

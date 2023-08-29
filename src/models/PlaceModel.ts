@@ -37,9 +37,7 @@ export const createPlace = async (place: Place): Promise<number> => {
       place.storeId,
       place.placeName,
       place.placeType,
-      `${Date.now()}_${Math.floor(Math.random() * 10000)}${path.extname(
-        place.placeImage
-      )}`,
+      place.placeImage,
       place.maxPeople,
       place.minPeople,
       koreaCreatedAt,

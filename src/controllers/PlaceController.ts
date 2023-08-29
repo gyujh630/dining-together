@@ -10,39 +10,63 @@ import {
 import { upload } from '../config/uploadConfig';
 import { updateIsRoomTrue } from '../models/StoreModel';
 
-export const createPlaceHandler = (req: Request, res: Response): void => {
+export const createPlaceHandler = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     const newPlace: Place = req.body;
 
-    // 이미지 업로드 처리
-    upload.single('placeImage')(req, res, async (err: any) => {
-      // if (err) {
-      //   console.error(err);
-      //   return res.status(500).json({ error: 'Failed to upload image' });
-      // }
+    if (req.file) {
+      newPlace.placeImage = req.file.filename;
+    }
 
-      if (req.file) {
-        // 이미지 업로드 성공한 경우
-        newPlace.placeImage = path.join(
-          'uploads',
-          'places',
-          req.file.originalname
-        ); // 이미지 파일 경로 저장
-      }
+    const placeId = await createPlace(newPlace);
 
-      const placeId = await createPlace(newPlace);
+    if (newPlace.placeType === '룸') {
+      await updateIsRoomTrue(newPlace.storeId);
+    }
 
-      if (newPlace.placeType === '룸') {
-        await updateIsRoomTrue(newPlace.storeId);
-      }
-
-      res.status(201).json({ placeId });
-    });
+    res.status(201).json({ placeId });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Failed to create place' });
   }
 };
+
+// export const createPlaceHandler = (req: Request, res: Response): void => {
+//   try {
+//     const newPlace: Place = req.body;
+
+//     // 이미지 업로드 처리
+//     upload.single('placeImage')(req, res, async (err: any) => {
+//       // if (err) {
+//       //   console.error(err);
+//       //   return res.status(500).json({ error: 'Failed to upload image' });
+//       // }
+
+//       if (req.file) {
+//         // 이미지 업로드 성공한 경우
+//         newPlace.placeImage = path.join(
+//           'uploads',
+//           'places',
+//           req.file.originalname
+//         ); // 이미지 파일 경로 저장
+//       }
+
+//       const placeId = await createPlace(newPlace);
+
+//       if (newPlace.placeType === '룸') {
+//         await updateIsRoomTrue(newPlace.storeId);
+//       }
+
+//       res.status(201).json({ placeId });
+//     });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ error: 'Failed to create place' });
+//   }
+// };
 
 // 특정 가게의 공간 전체 조회
 export const getAllPlacesHandler = async (

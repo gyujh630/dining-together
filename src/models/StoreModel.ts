@@ -1,5 +1,6 @@
 import pool from '../config/dbConfig';
 import multer from 'multer';
+import { upload } from '../config/uploadConfig';
 import path from 'path';
 import { Request } from 'express';
 import { StoreImage, addImageToStore } from './StoreImageModel';
@@ -41,7 +42,7 @@ export interface Store {
 // 가게 추가
 export const createStore = async (
   store: Store,
-  images: string[]
+  images: Express.Multer.File[]
 ): Promise<number> => {
   try {
     const nowUtc = new Date();
@@ -77,11 +78,9 @@ export const createStore = async (
     const [result] = await pool.query(query, values);
     const storeId = (result as any).insertId as number;
 
-    for (const imagePath of images) {
-      const randomImagePath = `${Date.now()}_${Math.floor(
-        Math.random() * 10000
-      )}${path.extname(imagePath)}`;
-      await addImageToStore(storeId, randomImagePath);
+    for (const image of images) {
+      const imagePath = image.filename;
+      await addImageToStore(storeId, imagePath);
     }
 
     return storeId;
