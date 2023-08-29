@@ -2,6 +2,7 @@ import { now } from 'moment';
 import pool from '../config/dbConfig';
 import { stringToDate, toKoreaTime } from '../utils/string-util';
 import { RowDataPacket, FieldPacket } from 'mysql2/promise';
+import { getStoreById } from './StoreModel';
 export interface Reservation extends RowDataPacket {
   reservedId: number;
   userId: number;
@@ -34,7 +35,18 @@ export async function createReservation(
       newReservation.visitTime,
     ]);
 
-    return (result as any).insertId as number;
+    const store = await getStoreById(newReservation.storeId);
+
+    const storeName = store?.storeName;
+    const people = newReservation.people;
+    const reservedDate = newReservation.reservedDate;
+    const visitTime = newReservation.visitTime;
+    return {
+      storeName,
+      people,
+      reservedDate,
+      visitTime,
+    } as any;
   } catch (error) {
     console.error(error);
     throw new Error('Error creating reservation');

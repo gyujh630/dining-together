@@ -18,9 +18,9 @@ userRouter.get('/', getAllUserHandler);
 userRouter.post('/signup', createUserHandler);
 userRouter.get('/check', checkEmailHandler);
 userRouter.post('/login', logInHandler);
-userRouter.get('/logout', logOutHandler);
-userRouter.get('/:userId', getUserHandler);
-userRouter.put('/:userId', updateUserHandler);
-userRouter.get('/:userId/reserve', getReservationsByUserIdHandler);
+userRouter.get('/logout', verifyToken, logOutHandler);
+userRouter.get('/:userId', verifyToken, getUserHandler);
+userRouter.put('/:userId', verifyToken, updateUserHandler);
+userRouter.get('/:userId/reserve', verifyToken, getReservationsByUserIdHandler);
 
 export { userRouter };

@@ -52,7 +52,7 @@ export const verifyToken = (
       });
     }
 
-    // req.decoded = decoded;
+    req.decoded = decoded as DecodedToken;
     return next();
   } catch (error: any) {
     if (error.name === 'TokenExpiredError') {

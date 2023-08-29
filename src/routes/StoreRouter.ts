@@ -2,6 +2,7 @@ import express from 'express';
 import {
   createStoreHandler,
   getAllStoresHandler,
+  getMyStoreHandler,
   getStoreHandler,
   updateStoreHandler,
 } from '../controllers/StoreController';
@@ -21,6 +22,7 @@ import {
 } from '../controllers/SearchFilterController';
 import { upload } from '../config/uploadConfig';
 import { getReservationsByStoreIdHandler } from '../controllers/ReservationController';
+import { verifyToken } from '../utils/jwt-util';
 
 const storeRouter = express.Router();
 
@@ -29,18 +31,39 @@ storeRouter.get('/search', searchStoresHandler);
 storeRouter.get('/filter', filterStoresHandler);
 
 // STORE
-storeRouter.post('/', upload.array('storeImage', 5), createStoreHandler);
+storeRouter.post(
+  '/',
+  verifyToken,
+  upload.array('storeImage', 5),
+  createStoreHandler
+);
 storeRouter.get('/', getAllStoresHandler);
+storeRouter.get('/my', verifyToken, getMyStoreHandler);
 storeRouter.get('/:storeId', getStoreHandler);
-storeRouter.put('/:storeId', upload.single('storeImage'), updateStoreHandler);
-storeRouter.get('/:storeId/reserve', getReservationsByStoreIdHandler);
+storeRouter.put(
+  '/:storeId',
+  verifyToken,
+  upload.single('storeImage'),
+  updateStoreHandler
+);
+storeRouter.get(
+  '/:storeId/reserve',
+  verifyToken,
+  getReservationsByStoreIdHandler
+);
 
 // PLACE
-storeRouter.post('/places', upload.single('placeImage'), createPlaceHandler);
+storeRouter.post(
+  '/places',
+  verifyToken,
+  upload.single('placeImage'),
+  createPlaceHandler
+);
 storeRouter.get('/:storeId/places', getAllPlacesHandler);
 storeRouter.get('/places/:placeId', getPlaceHandler);
 storeRouter.put(
   '/places/:placeId',
+  verifyToken,
   upload.single('placeImage'),
   updatePlaceHandler
 );

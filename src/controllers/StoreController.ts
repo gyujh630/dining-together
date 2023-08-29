@@ -5,6 +5,7 @@ import {
   getAllStores,
   getStoreById,
   updateStore,
+  getStoreByUserId,
 } from '../models/index';
 
 // 가게 추가
@@ -39,6 +40,21 @@ export const getAllStoresHandler = async (
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Failed to fetch stores' });
+  }
+};
+
+// 내 가게 조회
+export const getMyStoreHandler = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const userId = req.decoded.userId; //토큰에서 가져온 아이디
+    const store = await getStoreByUserId(userId);
+    res.status(200).json(store);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to get my store' });
   }
 };
 
