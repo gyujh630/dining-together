@@ -122,6 +122,26 @@ export const getAllStoresNotDel = async (): Promise<Store[]> => {
   }
 };
 
+// 내 가게 조회(사장님)
+export const getStoreByUserId = async (
+  userId: number
+): Promise<Store | null> => {
+  try {
+    const query = `
+      SELECT * FROM STORE
+      WHERE userId = ? AND isDeleted = 0;
+    `;
+    const [rows] = await pool.query(query, [userId]);
+    if (Array.isArray(rows) && rows.length > 0) {
+      return rows[0] as Store;
+    }
+    return null;
+  } catch (error) {
+    console.error(error);
+    throw new Error('Failed to fetch stores');
+  }
+};
+
 // 특정 가게 조회
 export const getStoreById = async (storeId: number): Promise<Store | null> => {
   try {

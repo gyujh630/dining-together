@@ -54,31 +54,27 @@ export async function createReservationHandler(
     WHERE placeId = ?
   `;
   try {
-    const { userId, placeId, people, reservedDate } = req.body;
-    const user = await getUserById(userId);
-    const place = await getPlaceByPlaceId(placeId);
-    const [storeResult]: any = await pool.query(findStoreIdQuery, [placeId]); // placeId를 사용하여 storeId를 찾기
-    if (!user || user.isDeleted) {
-      res.status(404).json({ error: 'User not found' });
-    } else if (storeResult.length === 0) {
-      res.status(404).json({ error: 'Store not found' });
-    } else {
-      const store: any = await getStoreById(Number(storeResult[0].storeId));
-      const available = await isAvailableReservation(placeId, reservedDate);
-
-      if (!available) {
-        res.status(409).json({ error: '이미 예약되어 있는 공간입니다.' });
-        return;
-      }
-
-      // 생성
-      const newReservation: Reservation = {
-        ...req.body, // 기존 필드 유지
-        storeId: store.storeId, // storeId 추가
-      };
-      const reservedId = await createReservation(newReservation);
-      res.status(201).json({ reservedId });
+    const userId = req.decoded.userId; //토큰에서 가져온 아이디
+    const { placeId, people, reservedDate } = req.body;
+    const available = await isAvailableReservation(placeId, reservedDate);
+    if (!available) {
+      res.status(409).json({ error: '이미 예약되어 있는 공간입니다.' });
+      return;
     }
+    const [storeResult]: any = await pool.query(findStoreIdQuery, [placeId]); // placeId를 사용하여 storeId를 찾기
+    if (storeResult.length === 0) {
+      res.status(404).json({ error: 'Store not found' });
+      return;
+    }
+    const store: any = await getStoreById(Number(storeResult[0].storeId));
+    // 생성
+    const newReservation: Reservation = {
+      ...req.body, // 기존 필드 유지
+      userId: userId,
+      storeId: store.storeId, // storeId 추가
+    };
+    const reservedInfo = await createReservation(newReservation);
+    res.status(201).json(reservedInfo);
   } catch (error: any) {
     res.status(500).json({ error: 'Failed to create reservation' });
   }
