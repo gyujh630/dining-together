@@ -21,8 +21,8 @@ export const createPlace = async (place: Place): Promise<number> => {
   try {
     const query = `
       INSERT INTO PLACE
-      (storeId, placeName, placeType, placeImage, maxPeople, minPeople, createdAt, modifiedAt)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+      (storeId, placeName, placeType, placeImage, maxPeople, minPeople)
+    VALUES (?, ?, ?, ?, ?, ?);
   `;
 
     const values = [

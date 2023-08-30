@@ -58,3 +58,22 @@ export const getImageByImageId = async (
     throw new Error('Failed to delete image');
   }
 };
+
+// 특정 가게의 특정 이미지 업데이트
+export const updateImageByImageId = async (
+  imageId: number,
+  imageUrl: string
+): Promise<void> => {
+  try {
+    const updateQuery = `
+      UPDATE STOREIMAGE
+      SET imageUrl = ?
+      WHERE imageId = ? ;
+    `;
+
+    await pool.query(updateQuery, [imageUrl, imageId]);
+  } catch (error) {
+    console.error(error);
+    throw new Error('Failed to update image in store');
+  }
+};

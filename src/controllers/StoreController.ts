@@ -84,7 +84,8 @@ export const updateStoreHandler = async (
 ): Promise<void> => {
   try {
     const storeId = parseInt(req.params.storeId, 10);
-    const updatedStore: Store = req.body;
+    const { updatedStore, storeImage } = req.body;
+    const imagePath = req.file?.filename;
 
     if (typeof updatedStore.address === 'string') {
       updatedStore.address = JSON.parse(updatedStore.address);
@@ -93,7 +94,7 @@ export const updateStoreHandler = async (
       updatedStore.operatingHours = JSON.parse(updatedStore.operatingHours);
     }
 
-    await updateStore(storeId, updatedStore, req.file?.path);
+    await updateStore(storeId, updatedStore, imagePath, storeImage);
     res.status(200).json({ message: 'Store updated successfully' });
   } catch (error) {
     console.error(error);

@@ -1,5 +1,9 @@
 import pool from '../config/dbConfig';
-import { addImageToStore } from './StoreImageModel';
+import {
+  StoreImage,
+  addImageToStore,
+  updateImageByImageId,
+} from './StoreImageModel';
 import { seoulRegionList, meetToMoodMap } from '../utils/string-util';
 import { getUserById } from './userModel';
 
@@ -28,7 +32,7 @@ export interface Store {
   maxNum: number;
   cost: number;
   isParking: number; // 주차공간 => 0 : 없음, 1 : 있음
-  isRoom: boolean;
+  isRoom: number;
   createdAt?: Date; // 자동 생성
   modifiedAt?: Date; // 자동 업데이트
   averageRating: number;
@@ -46,8 +50,8 @@ export const createStore = async (
 
     const query = `
       INSERT INTO STORE
-        (userId, storeName, storeContact, address, location, description, keyword, mood, operatingHours, closedDays, foodCategory, maxNum, cost, isParking, isRoom, createdAt, modifiedAt)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+        (userId, storeName, storeContact, address, location, description, keyword, mood, operatingHours, closedDays, foodCategory, maxNum, cost, isParking)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
     `;
 
     const values = [
@@ -65,7 +69,6 @@ export const createStore = async (
       store.maxNum,
       store.cost,
       store.isParking,
-      store.isRoom,
     ];
 
     const [result] = await pool.query(query, values);
@@ -161,38 +164,86 @@ export const getStoreById = async (storeId: number): Promise<Store | null> => {
 // 가게 정보 수정
 export const updateStore = async (
   storeId: number,
-  updatedStore: Store,
-  imagePath: string | undefined
+  updatedStore: Store | undefined,
+  imagePath: string | undefined,
+  storeImage: StoreImage | undefined
 ): Promise<void> => {
   try {
     const modifiedAt = new Date();
 
-    const updateFields = Object.entries(updatedStore)
-      .filter(([key, value]) => value !== undefined && key !== 'storeId')
-      .map(([key]) => `${key} = ?`)
-      .join(', ');
+    let updateFields = '';
+    let values: any[] = [modifiedAt, storeId];
 
-    if (!updateFields) {
-      throw new Error('No fields to update');
+    if (updatedStore) {
+      updateFields = Object.entries(updatedStore)
+        .filter(([key, value]) => value !== undefined && key !== 'storeId')
+        .map(([key]) => `${key} = ?`)
+        .join(', ');
+
+      if (updateFields) {
+        values = Object.entries(updatedStore)
+          .filter(([key, value]) => value !== undefined && key !== 'storeId')
+          .map(([key, value]) => {
+            if (key === 'address' || key === 'operatingHours') {
+              return JSON.stringify(value);
+            }
+            return value;
+          });
+
+        values.push(modifiedAt, storeId);
+      }
     }
 
-    const values = Object.entries(updatedStore)
-      .filter(([key, value]) => value !== undefined && key !== 'storeId')
-      .map(([key, value]) => {
-        if (key === 'address' || key === 'operatingHours') {
-          return JSON.stringify(value);
-        }
-        return value;
-      });
+    if (imagePath !== undefined) {
+      const imageUrl = `uploads/${imagePath}`;
 
-    const updateStoreQuery = `
-      UPDATE STORE
-      SET ${updateFields}, modifiedAt = ?
-      WHERE storeId = ?;
-    `;
+      if (storeImage && storeImage.imageId) {
+        await updateImageByImageId(storeImage.imageId, imageUrl);
+      } else {
+        throw new Error('No imageId provided for storeImage');
+      }
+    }
 
-    values.push(modifiedAt, storeId);
-    await pool.query(updateStoreQuery, values);
+    if (updateFields) {
+      const updateStoreQuery = `
+        UPDATE STORE
+        SET ${updateFields}, modifiedAt = ?
+        WHERE storeId = ?;
+      `;
+
+      await pool.query(updateStoreQuery, values);
+    }
+    // const updateFields = Object.entries(updatedStore)
+    //   .filter(([key, value]) => value !== undefined && key !== 'storeId')
+    //   .map(([key]) => `${key} = ?`)
+    //   .join(', ');
+
+    // if (!updateFields) {
+    //   throw new Error('No fields to update');
+    // }
+
+    // const values = Object.entries(updatedStore)
+    //   .filter(([key, value]) => value !== undefined && key !== 'storeId')
+    //   .map(([key, value]) => {
+    //     if (key === 'address' || key === 'operatingHours') {
+    //       return JSON.stringify(value);
+    //     }
+    //     return value;
+    //   });
+
+    // const updateStoreQuery = `
+    //   UPDATE STORE
+    //   SET ${updateFields}, modifiedAt = ?
+    //   WHERE storeId = ?;
+    // `;
+
+    // values.push(modifiedAt, storeId);
+    // await pool.query(updateStoreQuery, values);
+
+    // if (imagePath !== undefined) {
+    //   const imageUrl = `uploads/${imagePath}`;
+    //   await updateImageByImageId(storeId, imageUrl);
+    // }
   } catch (error) {
     console.error(error);
     throw new Error('Failed to update store');
