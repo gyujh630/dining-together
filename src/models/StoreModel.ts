@@ -1,9 +1,5 @@
 import pool from '../config/dbConfig';
-import multer from 'multer';
-import { upload } from '../config/uploadConfig';
-import path from 'path';
-import { Request } from 'express';
-import { StoreImage, addImageToStore } from './StoreImageModel';
+import { addImageToStore } from './StoreImageModel';
 import { seoulRegionList, meetToMoodMap } from '../utils/string-util';
 import { getUserById } from './userModel';
 
