@@ -28,7 +28,8 @@ export const getAllStoresByFilter = async (
   selectedDate: string | undefined,
   location: string | undefined,
   foodCategory: string | undefined,
-  cost: number | undefined,
+  minCost: number | undefined,
+  maxCost: number | undefined,
   mood: string | undefined,
   isRoom: number | undefined
 ): Promise<Store[]> => {
@@ -49,16 +50,21 @@ export const getAllStoresByFilter = async (
 
     if (location) {
       values.push(location);
-      filterConditions.push(`s.location = ?`);
+      filterConditions.push(`s.location LIKE ?`);
     }
 
     if (foodCategory) {
       values.push(foodCategory);
-      filterConditions.push(`s.foodCategory = ?`);
+      filterConditions.push(`s.foodCategory LIKE ?`);
     }
 
-    if (cost) {
-      values.push(cost);
+    if (minCost) {
+      values.push(minCost);
+      filterConditions.push(`s.cost = ?`);
+    }
+
+    if (maxCost) {
+      values.push(minCost);
       filterConditions.push(`s.cost = ?`);
     }
 
