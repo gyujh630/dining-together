@@ -186,7 +186,12 @@ export const updateStore = async (
 
     const values = Object.entries(updatedStore)
       .filter(([key, value]) => value !== undefined && key !== 'storeId')
-      .map(([key, value]) => value);
+      .map(([key, value]) => {
+        if (key === 'address' || key === 'operatingHours') {
+          return JSON.stringify(value);
+        }
+        return value;
+      });
 
     const updateStoreQuery = `
       UPDATE STORE

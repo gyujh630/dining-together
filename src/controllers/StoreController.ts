@@ -85,6 +85,14 @@ export const updateStoreHandler = async (
   try {
     const storeId = parseInt(req.params.storeId, 10);
     const updatedStore: Store = req.body;
+
+    if (typeof updatedStore.address === 'string') {
+      updatedStore.address = JSON.parse(updatedStore.address);
+    }
+    if (typeof updatedStore.operatingHours === 'string') {
+      updatedStore.operatingHours = JSON.parse(updatedStore.operatingHours);
+    }
+
     await updateStore(storeId, updatedStore, req.file?.path);
     res.status(200).json({ message: 'Store updated successfully' });
   } catch (error) {
