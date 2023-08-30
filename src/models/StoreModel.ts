@@ -222,19 +222,22 @@ export const getHomeWhenLogin = async (
 ): Promise<any> => {
   const randomRegion =
     seoulRegionList[Math.floor(Math.random() * seoulRegionList.length)];
-
   try {
     //지역 랜덤 추천 쿼리
     const regionRandomQuery = `
-      SELECT S.storeId, S.storeName, S.foodCategory FROM STORE S
+      SELECT S.storeId, S.storeName, S.foodCategory, MIN(SI.imageUrl) AS imageUrl
+      FROM STORE S
+      LEFT JOIN STOREIMAGE SI ON S.storeId = SI.storeId
       WHERE S.location = ? AND S.isDeleted = 0
+      AND S.isDeleted = 0
+      GROUP BY S.storeId
       ORDER BY RAND()
       LIMIT 10;
     `;
 
     //30인 이상 단체 가능 쿼리
     const bigStoreQuery = `
-      SELECT S.storeId, storeName, foodCategory
+      SELECT S.storeId, storeName, foodCategory, MIN(SI.imageUrl) AS imageUrl
       FROM STORE S
       JOIN (
         SELECT MAX(P.maxPeople) AS maxPeople, P.storeId
@@ -242,20 +245,26 @@ export const getHomeWhenLogin = async (
         GROUP BY P.storeId
       ) AS MaxPlaces
       ON S.storeId = MaxPlaces.storeId
+      LEFT JOIN STOREIMAGE SI ON S.storeId = SI.storeId
       WHERE MaxPlaces.maxPeople >= 30
+      AND S.isDeleted = 0
+      GROUP BY S.storeId
       LIMIT 10;
     `;
 
     //새로 입점 쿼리
     const newStoreQuery = `
-      SELECT storeId, storeName, foodCategory FROM STORE
+      SELECT S.storeId, S.storeName, S.foodCategory, MIN(SI.imageUrl) AS imageUrl
+      FROM STORE S
+      LEFT JOIN
+      STOREIMAGE SI ON S.storeId = SI.storeId
+      AND S.isDeleted = 0
+      GROUP BY S.storeId
       ORDER BY createdAt DESC
       LIMIT 10;
     `;
 
-    const [regionRandomList] = await pool.query(regionRandomQuery, [
-      randomRegion,
-    ]);
+    const [regionRandomList] = await pool.query(regionRandomQuery, ['강남']);
     const [bigList] = await pool.query(bigStoreQuery);
     const [newStoreList] = await pool.query(newStoreQuery);
 
@@ -277,27 +286,22 @@ export const getHomeWhenLogin = async (
 export const getHomeWhenNotLogin = async (): Promise<any> => {
   const randomRegion =
     seoulRegionList[Math.floor(Math.random() * seoulRegionList.length)];
-
   try {
     //지역 랜덤 추천 쿼리
     const regionRandomQuery = `
-      SELECT S.storeId, S.storeName, S.foodCategory, SI.imageUrl
+      SELECT S.storeId, S.storeName, S.foodCategory, MIN(SI.imageUrl) AS imageUrl
       FROM STORE S
-      LEFT JOIN
-      STOREIMAGE SI ON S.storeId = SI.storeId
+      LEFT JOIN STOREIMAGE SI ON S.storeId = SI.storeId
       WHERE S.location = ? AND S.isDeleted = 0
-      AND SI.imageId = (
-        SELECT MIN(imageId)
-        FROM STOREIMAGE
-        WHERE storeId = S.storeId
-        )
+      AND S.isDeleted = 0
+      GROUP BY S.storeId
       ORDER BY RAND()
       LIMIT 10;
     `;
 
     //30인 이상 단체 가능 쿼리
     const bigStoreQuery = `
-      SELECT S.storeId, storeName, foodCategory, SI.imageUrl
+      SELECT S.storeId, storeName, foodCategory, MIN(SI.imageUrl) AS imageUrl
       FROM STORE S
       JOIN (
         SELECT MAX(P.maxPeople) AS maxPeople, P.storeId
@@ -305,17 +309,21 @@ export const getHomeWhenNotLogin = async (): Promise<any> => {
         GROUP BY P.storeId
       ) AS MaxPlaces
       ON S.storeId = MaxPlaces.storeId
-      LEFT JOIN
-      STOREIMAGE SI ON S.storeId = SI.storeId
+      LEFT JOIN STOREIMAGE SI ON S.storeId = SI.storeId
       WHERE MaxPlaces.maxPeople >= 30
+      AND S.isDeleted = 0
+      GROUP BY S.storeId
       LIMIT 10;
     `;
 
     //새로 입점 쿼리
     const newStoreQuery = `
-      SELECT S.storeId, S.storeName, S.foodCategory, SI.imageUrl FROM STORE S
+      SELECT S.storeId, S.storeName, S.foodCategory, MIN(SI.imageUrl) AS imageUrl
+      FROM STORE S
       LEFT JOIN
       STOREIMAGE SI ON S.storeId = SI.storeId
+      AND S.isDeleted = 0
+      GROUP BY S.storeId
       ORDER BY createdAt DESC
       LIMIT 10;
     `;
@@ -328,7 +336,7 @@ export const getHomeWhenNotLogin = async (): Promise<any> => {
     const [newStoreList] = await pool.query(newStoreQuery);
 
     // 동적인 속성 이름을 사용하여 객체 생성
-    const result: { [key: string]: any } = {
+    const result = {
       [randomRegion]: regionRandomList,
       '30인 이상 단체 가능!': bigList,
       '새로 입점했어요': newStoreList,
