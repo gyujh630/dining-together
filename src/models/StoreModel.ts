@@ -234,9 +234,10 @@ export const getHomeWhenLogin = async (userId: number): Promise<any> => {
 
     //지역 랜덤 추천 쿼리
     const regionQuery = `
-      SELECT S.storeId, S.storeName, S.foodCategory, MIN(SI.imageUrl) AS imageUrl
+      SELECT S.storeId, S.storeName, S.foodCategory, MIN(SI.imageUrl) AS imageUrl, MIN(P.minPeople) AS minPeople, MAX(P.maxPeople) AS maxPeople
       FROM STORE S
       LEFT JOIN STOREIMAGE SI ON S.storeId = SI.storeId
+      LEFT JOIN PLACE P ON S.storeId = P.storeId
       WHERE S.location = ? AND S.isDeleted = 0
       AND S.isDeleted = 0
       GROUP BY S.storeId
@@ -246,9 +247,10 @@ export const getHomeWhenLogin = async (userId: number): Promise<any> => {
 
     //유저 맞춤 쿼리
     const userCustomQuery = `
-      SELECT S.storeId, S.storeName, S.foodCategory, MIN(SI.imageUrl) AS imageUrl
+      SELECT S.storeId, S.storeName, S.foodCategory, MIN(SI.imageUrl) AS imageUrl, MIN(P.minPeople) AS minPeople, MAX(P.maxPeople) AS maxPeople
       FROM STORE S
       LEFT JOIN STOREIMAGE SI ON S.storeId = SI.storeId
+      LEFT JOIN PLACE P ON S.storeId = P.storeId
       WHERE S.isDeleted = 0
       AND S.mood LIKE ?
       GROUP BY S.storeId
@@ -258,7 +260,7 @@ export const getHomeWhenLogin = async (userId: number): Promise<any> => {
 
     //30인 이상 단체 가능 쿼리
     const bigStoreQuery = `
-      SELECT S.storeId, storeName, foodCategory, MIN(SI.imageUrl) AS imageUrl
+      SELECT S.storeId, storeName, foodCategory, MIN(SI.imageUrl) AS imageUrl, MIN(P.minPeople) AS minPeople, MAX(P.maxPeople) AS maxPeople
       FROM STORE S
       JOIN (
         SELECT MAX(P.maxPeople) AS maxPeople, P.storeId
@@ -267,6 +269,7 @@ export const getHomeWhenLogin = async (userId: number): Promise<any> => {
       ) AS MaxPlaces
       ON S.storeId = MaxPlaces.storeId
       LEFT JOIN STOREIMAGE SI ON S.storeId = SI.storeId
+      LEFT JOIN PLACE P ON S.storeId = P.storeId
       WHERE MaxPlaces.maxPeople >= 30
       AND S.isDeleted = 0
       GROUP BY S.storeId
@@ -276,13 +279,13 @@ export const getHomeWhenLogin = async (userId: number): Promise<any> => {
 
     //새로 입점 쿼리
     const newStoreQuery = `
-      SELECT S.storeId, S.storeName, S.foodCategory, MIN(SI.imageUrl) AS imageUrl
+      SELECT S.storeId, S.storeName, S.foodCategory, MIN(SI.imageUrl) AS imageUrl, MIN(P.minPeople) AS minPeople, MAX(P.maxPeople) AS maxPeople
       FROM STORE S
-      LEFT JOIN
-      STOREIMAGE SI ON S.storeId = SI.storeId
-      AND S.isDeleted = 0
+      LEFT JOIN STOREIMAGE SI ON S.storeId = SI.storeId
+      LEFT JOIN PLACE P ON S.storeId = P.storeId
+      WHERE S.isDeleted = 0
       GROUP BY S.storeId
-      ORDER BY createdAt DESC
+      ORDER BY S.createdAt DESC
       LIMIT 10;
     `;
 
@@ -332,11 +335,11 @@ export const getHomeWhenNotLogin = async (): Promise<any> => {
   try {
     //지역 랜덤 추천 쿼리
     const regionRandomQuery = `
-      SELECT S.storeId, S.storeName, S.foodCategory, MIN(SI.imageUrl) AS imageUrl
+      SELECT S.storeId, S.storeName, S.foodCategory, MIN(SI.imageUrl) AS imageUrl, MIN(P.minPeople) AS minPeople, MAX(P.maxPeople) AS maxPeople
       FROM STORE S
       LEFT JOIN STOREIMAGE SI ON S.storeId = SI.storeId
+      LEFT JOIN PLACE P ON S.storeId = P.storeId
       WHERE S.location = ? AND S.isDeleted = 0
-      AND S.isDeleted = 0
       GROUP BY S.storeId
       ORDER BY RAND()
       LIMIT 10;
@@ -344,7 +347,7 @@ export const getHomeWhenNotLogin = async (): Promise<any> => {
 
     //30인 이상 단체 가능 쿼리
     const bigStoreQuery = `
-      SELECT S.storeId, storeName, foodCategory, MIN(SI.imageUrl) AS imageUrl
+      SELECT S.storeId, storeName, foodCategory, MIN(SI.imageUrl) AS imageUrl, MIN(P.minPeople) AS minPeople, MAX(P.maxPeople) AS maxPeople
       FROM STORE S
       JOIN (
         SELECT MAX(P.maxPeople) AS maxPeople, P.storeId
@@ -353,6 +356,7 @@ export const getHomeWhenNotLogin = async (): Promise<any> => {
       ) AS MaxPlaces
       ON S.storeId = MaxPlaces.storeId
       LEFT JOIN STOREIMAGE SI ON S.storeId = SI.storeId
+      LEFT JOIN PLACE P ON S.storeId = P.storeId
       WHERE MaxPlaces.maxPeople >= 30
       AND S.isDeleted = 0
       GROUP BY S.storeId
@@ -362,13 +366,13 @@ export const getHomeWhenNotLogin = async (): Promise<any> => {
 
     //새로 입점 쿼리
     const newStoreQuery = `
-      SELECT S.storeId, S.storeName, S.foodCategory, MIN(SI.imageUrl) AS imageUrl
+      SELECT S.storeId, S.storeName, S.foodCategory, MIN(SI.imageUrl) AS imageUrl, MIN(P.minPeople) AS minPeople, MAX(P.maxPeople) AS maxPeople
       FROM STORE S
-      LEFT JOIN
-      STOREIMAGE SI ON S.storeId = SI.storeId
-      AND S.isDeleted = 0
+      LEFT JOIN STOREIMAGE SI ON S.storeId = SI.storeId
+      LEFT JOIN PLACE P ON S.storeId = P.storeId
+      WHERE S.isDeleted = 0
       GROUP BY S.storeId
-      ORDER BY createdAt DESC
+      ORDER BY S.createdAt DESC
       LIMIT 10;
     `;
 
