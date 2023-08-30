@@ -4,7 +4,12 @@ import { upload } from '../config/uploadConfig';
 import path from 'path';
 import { Request } from 'express';
 import { StoreImage, addImageToStore } from './StoreImageModel';
-import { seoulRegionList } from '../utils/string-util';
+import {
+  seoulRegionList,
+  convertUtcToKoreaTime,
+  meetToMoodMap,
+} from '../utils/string-util';
+import { getUserById } from './userModel';
 
 export interface Store {
   storeId?: number; // 자동 생성
@@ -124,7 +129,7 @@ export const getStoreByUserId = async (
 ): Promise<Store | null> => {
   try {
     const query = `
-      SELECT S.*, MIN(SI.imageUrl) AS imageUrl
+      SELECT S.*, SI.imageUrl
       FROM STORE S
       LEFT JOIN STOREIMAGE SI ON S.storeId = SI.storeId
       WHERE userId = ? AND isDeleted = 0;
@@ -216,20 +221,44 @@ export const deleteStore = async (storeId: number): Promise<void> => {
 };
 
 //로그인시 홈화면
-export const getHomeWhenLogin = async (
-  userId: number,
-  userType: number
-): Promise<any> => {
-  const randomRegion =
-    seoulRegionList[Math.floor(Math.random() * seoulRegionList.length)];
+export const getHomeWhenLogin = async (userId: number): Promise<any> => {
   try {
+    const user = await getUserById(userId);
+    var userLocation = user?.location;
+    if (!userLocation) {
+      userLocation = '강남';
+    }
+
+    var meetingTypesString = user?.meetingTypes;
+    let meetingTypes: string[] = [];
+    if (meetingTypesString) {
+      meetingTypes = meetingTypesString.split(',');
+    }
+
+    const randomMeetingType =
+      meetingTypes[Math.floor(Math.random() * meetingTypes.length)];
+
+    const mappedValue = meetToMoodMap[randomMeetingType];
+
     //지역 랜덤 추천 쿼리
-    const regionRandomQuery = `
+    const regionQuery = `
       SELECT S.storeId, S.storeName, S.foodCategory, MIN(SI.imageUrl) AS imageUrl
       FROM STORE S
       LEFT JOIN STOREIMAGE SI ON S.storeId = SI.storeId
       WHERE S.location = ? AND S.isDeleted = 0
       AND S.isDeleted = 0
+      GROUP BY S.storeId
+      ORDER BY RAND()
+      LIMIT 10;
+    `;
+
+    //유저 맞춤 쿼리
+    const userCustomQuery = `
+      SELECT S.storeId, S.storeName, S.foodCategory, MIN(SI.imageUrl) AS imageUrl
+      FROM STORE S
+      LEFT JOIN STOREIMAGE SI ON S.storeId = SI.storeId
+      WHERE S.isDeleted = 0
+      AND S.mood LIKE ?
       GROUP BY S.storeId
       ORDER BY RAND()
       LIMIT 10;
@@ -249,6 +278,7 @@ export const getHomeWhenLogin = async (
       WHERE MaxPlaces.maxPeople >= 30
       AND S.isDeleted = 0
       GROUP BY S.storeId
+      ORDER BY RAND()
       LIMIT 10;
     `;
 
@@ -264,16 +294,37 @@ export const getHomeWhenLogin = async (
       LIMIT 10;
     `;
 
-    const [regionRandomList] = await pool.query(regionRandomQuery, ['강남']);
+    const [regionList] = await pool.query(regionQuery, [userLocation]);
+    const [customList] = await pool.query(userCustomQuery, [mappedValue]);
     const [bigList] = await pool.query(bigStoreQuery);
     const [newStoreList] = await pool.query(newStoreQuery);
 
+    const locationTitle = `${userLocation} 회식 명소`;
+    let recommendTitle: string;
+
+    if (
+      randomMeetingType === '동아리' ||
+      randomMeetingType === '동호회' ||
+      randomMeetingType === '스포츠 동호회'
+    ) {
+      recommendTitle = `#${randomMeetingType} 회식 장소 찾으세요?`;
+    } else {
+      recommendTitle = `#${randomMeetingType} 장소 찾으세요?`;
+    }
+    const customListArray = JSON.parse(JSON.stringify(customList));
+
     // 동적인 속성 이름을 사용하여 객체 생성
     const result: { [key: string]: any } = {
-      [randomRegion]: regionRandomList,
-      '30인 이상 단체 가능!': bigList,
-      '새로 입점했어요': newStoreList,
+      [locationTitle]: regionList,
     };
+
+    // customList가 비어있지 않은 경우만 해당 속성을 result 객체에 추가
+    if (customListArray.length > 0) {
+      result[recommendTitle] = customList;
+    }
+
+    result['30인 이상 단체 가능!'] = bigList;
+    result['새로 입점했어요'] = newStoreList;
 
     return result;
   } catch (error) {
@@ -313,6 +364,7 @@ export const getHomeWhenNotLogin = async (): Promise<any> => {
       WHERE MaxPlaces.maxPeople >= 30
       AND S.isDeleted = 0
       GROUP BY S.storeId
+      ORDER BY RAND()
       LIMIT 10;
     `;
 
@@ -328,16 +380,17 @@ export const getHomeWhenNotLogin = async (): Promise<any> => {
       LIMIT 10;
     `;
 
-    // const [regionRandomList] = await pool.query(regionRandomQuery, [
-    //   randomRegion,
-    // ]);
-    const [regionRandomList] = await pool.query(regionRandomQuery, ['강남']);
+    const locationTitle = `${randomRegion} 회식 명소`;
+    const [regionRandomList] = await pool.query(
+      regionRandomQuery,
+      randomRegion
+    );
     const [bigList] = await pool.query(bigStoreQuery);
     const [newStoreList] = await pool.query(newStoreQuery);
 
     // 동적인 속성 이름을 사용하여 객체 생성
     const result = {
-      [randomRegion]: regionRandomList,
+      [locationTitle]: regionRandomList,
       '30인 이상 단체 가능!': bigList,
       '새로 입점했어요': newStoreList,
     };

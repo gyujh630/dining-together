@@ -19,7 +19,7 @@ export const getHomeController = async (
         const data = await getHomeWhenNotLogin();
         res.status(200).json(data);
       } else if (userType === 1) {
-        const data = await getHomeWhenLogin(userId, userType);
+        const data = await getHomeWhenLogin(userId);
         res.status(200).json(data);
       } else {
         res.status(400).json({ error: '유효하지 않은 userType 값입니다.' });
