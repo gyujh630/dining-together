@@ -4,11 +4,7 @@ import { upload } from '../config/uploadConfig';
 import path from 'path';
 import { Request } from 'express';
 import { StoreImage, addImageToStore } from './StoreImageModel';
-import {
-  seoulRegionList,
-  convertUtcToKoreaTime,
-  meetToMoodMap,
-} from '../utils/string-util';
+import { seoulRegionList, meetToMoodMap } from '../utils/string-util';
 import { getUserById } from './userModel';
 
 export interface Store {
