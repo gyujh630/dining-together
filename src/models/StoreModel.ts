@@ -128,7 +128,9 @@ export const getStoreByUserId = async (
 ): Promise<Store | null> => {
   try {
     const query = `
-      SELECT * FROM STORE
+      SELECT S.*, MIN(SI.imageUrl) AS imageUrl
+      FROM STORE S
+      LEFT JOIN STOREIMAGE SI ON S.storeId = SI.storeId
       WHERE userId = ? AND isDeleted = 0;
     `;
     const [rows] = await pool.query(query, [userId]);
