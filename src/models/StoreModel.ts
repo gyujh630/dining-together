@@ -4,7 +4,7 @@ import { upload } from '../config/uploadConfig';
 import path from 'path';
 import { Request } from 'express';
 import { StoreImage, addImageToStore } from './StoreImageModel';
-import { seoulRegionList, convertUtcToKoreaTime } from '../utils/string-util';
+import { seoulRegionList } from '../utils/string-util';
 
 export interface Store {
   storeId?: number; // 자동 생성
@@ -45,9 +45,7 @@ export const createStore = async (
   images: Express.Multer.File[]
 ): Promise<number> => {
   try {
-    const nowUtc = new Date();
-    const koreaCreatedAt = convertUtcToKoreaTime(nowUtc);
-    const koreaModifiedAt = koreaCreatedAt;
+    const modifiedAt = new Date();
 
     const query = `
       INSERT INTO STORE
@@ -71,8 +69,6 @@ export const createStore = async (
       store.cost,
       store.isParking,
       store.isRoom,
-      koreaCreatedAt,
-      koreaModifiedAt,
     ];
 
     const [result] = await pool.query(query, values);
@@ -172,8 +168,7 @@ export const updateStore = async (
   imagePath: string | undefined
 ): Promise<void> => {
   try {
-    const nowUtc = new Date();
-    const koreaModifiedAt = convertUtcToKoreaTime(nowUtc);
+    const modifiedAt = new Date();
 
     const updateFields = Object.entries(updatedStore)
       .filter(([key, value]) => value !== undefined && key !== 'storeId')
@@ -199,7 +194,7 @@ export const updateStore = async (
       WHERE storeId = ?;
     `;
 
-    values.push(koreaModifiedAt, storeId);
+    values.push(modifiedAt, storeId);
     await pool.query(updateStoreQuery, values);
   } catch (error) {
     console.error(error);
@@ -357,8 +352,7 @@ export const getHomeWhenNotLogin = async (): Promise<any> => {
 // 공간 추가 시 공간 유형이 룸인 경우 isRoom true로 업뎃
 export const updateIsRoomTrue = async (storeId: number): Promise<void> => {
   try {
-    const nowUtc = new Date();
-    const koreaModifiedAt = convertUtcToKoreaTime(nowUtc);
+    const modifiedAt = new Date();
 
     const updateStoreQuery = `
       UPDATE STORE
@@ -368,7 +362,7 @@ export const updateIsRoomTrue = async (storeId: number): Promise<void> => {
 
     const values = [];
 
-    values.push(koreaModifiedAt, storeId);
+    values.push(modifiedAt, storeId);
     await pool.query(updateStoreQuery, values);
   } catch (error) {
     console.error(error);

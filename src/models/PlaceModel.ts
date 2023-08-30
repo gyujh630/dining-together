@@ -1,11 +1,7 @@
 import pool from '../config/dbConfig';
 import multer from 'multer';
 import path from 'path';
-import {
-  isDateCloseDay,
-  isValidCloseDay,
-  convertUtcToKoreaTime,
-} from '../utils/string-util';
+import { isDateCloseDay, isValidCloseDay } from '../utils/string-util';
 
 export interface Place {
   placeId?: number; // 자동 생성
@@ -23,10 +19,6 @@ export interface Place {
 // 특정 가게의 공간 추가
 export const createPlace = async (place: Place): Promise<number> => {
   try {
-    const nowUtc = new Date();
-    const koreaCreatedAt = convertUtcToKoreaTime(nowUtc);
-    const koreaModifiedAt = koreaCreatedAt;
-
     const query = `
       INSERT INTO PLACE
       (storeId, placeName, placeType, placeImage, maxPeople, minPeople, createdAt, modifiedAt)
@@ -40,8 +32,6 @@ export const createPlace = async (place: Place): Promise<number> => {
       place.placeImage,
       place.maxPeople,
       place.minPeople,
-      koreaCreatedAt,
-      koreaModifiedAt,
     ];
     const [result] = await pool.query(query, values);
     return (result as any).insertId as number;
@@ -90,8 +80,7 @@ export const updatePlace = async (
   updatedPlace: Place
 ): Promise<void> => {
   try {
-    const nowUtc = new Date();
-    const koreaModifiedAt = convertUtcToKoreaTime(nowUtc);
+    const modifiedAt = new Date();
 
     let updateFields = Object.entries(updatedPlace)
       .filter(([key, value]) => value !== undefined && key !== 'placeId')
@@ -112,7 +101,7 @@ export const updatePlace = async (
       WHERE placeId = ?;
     `;
 
-    values.push(koreaModifiedAt, placeId);
+    values.push(modifiedAt, placeId);
     await pool.query(updatePlaceQuery, values);
   } catch (error) {
     console.error(error);

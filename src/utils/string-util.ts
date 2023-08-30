@@ -150,10 +150,3 @@ export function toKoreaTime(date: Date) {
 
   return koreaTime;
 }
-
-// UTC 시간을 한국 시간으로 변환하는 함수
-export const convertUtcToKoreaTime = (utcDate: Date): Date => {
-  const koreaOffset = 9 * 60 * 60 * 1000; // 한국 : UTC+9
-  const koreanTime = new Date(utcDate.getTime() + koreaOffset);
-  return koreanTime;
-};
