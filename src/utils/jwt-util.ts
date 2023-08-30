@@ -23,12 +23,19 @@ export const revokeToken = (token: string) => {
 };
 
 export const generateAuthToken = (user: DecodedToken): string => {
+  const { userId, userType } = user;
   const token = jwt.sign(
-    user,
+    { userId, userType },
     process.env.JWT_SECRET as Secret,
     { expiresIn: '12h' } // 토큰 만료 시간
   );
   return token;
+};
+
+export const decodeToken = (token: string) => {
+  const tokenString = token.split(' ');
+  const decodedToken = jwt.decode(tokenString[1]);
+  return decodedToken as DecodedToken;
 };
 
 export const verifyToken = (
@@ -52,7 +59,7 @@ export const verifyToken = (
       });
     }
 
-    // req.decoded = decoded;
+    req.decoded = decoded as DecodedToken;
     return next();
   } catch (error: any) {
     if (error.name === 'TokenExpiredError') {
