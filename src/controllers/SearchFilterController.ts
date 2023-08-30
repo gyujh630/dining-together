@@ -34,13 +34,18 @@ export const filterStoresHandler = async (
     isRoom,
   } = req.query;
   try {
+    const foodCategoryArray = foodCategory
+      ? (foodCategory as string).split(',')
+      : undefined;
+    const moodArray = mood ? (mood as string).split(',') : undefined;
+
     const filterResults = await getAllStoresByFilter(
       selectedDate as string | undefined,
       location as string | undefined,
-      foodCategory as string | undefined,
+      foodCategoryArray,
       parseInt(minCost as string) || undefined,
       parseInt(maxCost as string) || undefined,
-      mood as string | undefined,
+      moodArray,
       parseInt(isRoom as string) || undefined
     );
 

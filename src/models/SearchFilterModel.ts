@@ -27,10 +27,10 @@ export const getAllStoresBySearch = async (
 export const getAllStoresByFilter = async (
   selectedDate: string | undefined,
   location: string | undefined,
-  foodCategory: string | undefined,
+  foodCategories: string[] | undefined,
   minCost: number | undefined,
   maxCost: number | undefined,
-  mood: string | undefined,
+  moods: string[] | undefined,
   isRoom: number | undefined
 ): Promise<Store[]> => {
   try {
@@ -53,24 +53,29 @@ export const getAllStoresByFilter = async (
       filterConditions.push(`s.location LIKE ?`);
     }
 
-    if (foodCategory) {
-      values.push(foodCategory);
-      filterConditions.push(`s.foodCategory LIKE ?`);
+    if (foodCategories) {
+      const foodCategoryConditions = foodCategories.map(
+        () => 's.foodCategory = ?'
+      );
+      filterConditions.push(`(${foodCategoryConditions.join(' OR ')})`);
+      values.push(...foodCategories.map((category) => `${category}`));
     }
 
-    if (minCost) {
+    if (minCost !== undefined && maxCost !== undefined) {
+      values.push(minCost, maxCost);
+      filterConditions.push(`s.cost BETWEEN ? AND ?`);
+    } else if (minCost !== undefined) {
       values.push(minCost);
-      filterConditions.push(`s.cost = ?`);
+      filterConditions.push(`s.cost >= ?`);
+    } else if (maxCost !== undefined) {
+      values.push(maxCost);
+      filterConditions.push(`s.cost <= ?`);
     }
 
-    if (maxCost) {
-      values.push(minCost);
-      filterConditions.push(`s.cost = ?`);
-    }
-
-    if (mood) {
-      values.push(`%${mood}%`);
-      filterConditions.push(`s.mood LIKE ?`);
+    if (moods) {
+      const moodConditions = moods.map(() => 's.mood LIKE ?');
+      filterConditions.push(`(${moodConditions.join(' OR ')})`);
+      values.push(...moods.map((mood) => `%${mood}%`));
     }
 
     if (isRoom) {
