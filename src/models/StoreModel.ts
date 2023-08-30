@@ -213,6 +213,7 @@ export const deleteStore = async (storeId: number): Promise<void> => {
   }
 };
 
+//로그인시 홈화면
 export const getHomeWhenLogin = async (
   userId: number,
   userType: number
@@ -270,6 +271,7 @@ export const getHomeWhenLogin = async (
   }
 };
 
+//로그인x, 사장님 홈화면
 export const getHomeWhenNotLogin = async (): Promise<any> => {
   const randomRegion =
     seoulRegionList[Math.floor(Math.random() * seoulRegionList.length)];
@@ -293,7 +295,7 @@ export const getHomeWhenNotLogin = async (): Promise<any> => {
 
     //30인 이상 단체 가능 쿼리
     const bigStoreQuery = `
-      SELECT S.storeId, storeName, foodCategory
+      SELECT S.storeId, storeName, foodCategory, SI.imageUrl
       FROM STORE S
       JOIN (
         SELECT MAX(P.maxPeople) AS maxPeople, P.storeId
@@ -301,13 +303,17 @@ export const getHomeWhenNotLogin = async (): Promise<any> => {
         GROUP BY P.storeId
       ) AS MaxPlaces
       ON S.storeId = MaxPlaces.storeId
+      LEFT JOIN
+      STOREIMAGE SI ON S.storeId = SI.storeId
       WHERE MaxPlaces.maxPeople >= 30
       LIMIT 10;
     `;
 
     //새로 입점 쿼리
     const newStoreQuery = `
-      SELECT storeId, storeName, foodCategory FROM STORE
+      SELECT S.storeId, S.storeName, S.foodCategory, SI.imageUrl FROM STORE S
+      LEFT JOIN
+      STOREIMAGE SI ON S.storeId = SI.storeId
       ORDER BY createdAt DESC
       LIMIT 10;
     `;
