@@ -20,6 +20,8 @@ app.get('/', async (req: Request, res: Response) => {
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+app.use(express.static('uploads'));
+
 app.use('/api/user', userRouter);
 app.use('/api/stores', storeRouter);
 app.use('/api/reserve', reservationRouter);
