@@ -24,21 +24,14 @@ export const filterStoresHandler = async (
   req: Request,
   res: Response
 ): Promise<void> => {
-  const {
-    selectedDate,
-    location,
-    foodCategory,
-    minCost,
-    maxCost,
-    mood,
-    isRoom,
-  } = req.query;
+  const { selectedDate, location, foodCategory, minCost, maxCost, mood, room } =
+    req.query;
   try {
     const foodCategoryArray = foodCategory
       ? (foodCategory as string).split(',')
       : undefined;
     const moodArray = mood ? (mood as string).split(',') : undefined;
-
+    const roomArray = room ? (room as string).split(',') : undefined;
     const filterResults = await getAllStoresByFilter(
       selectedDate as string | undefined,
       location as string | undefined,
@@ -46,7 +39,7 @@ export const filterStoresHandler = async (
       parseInt(minCost as string) || undefined,
       parseInt(maxCost as string) || undefined,
       moodArray,
-      parseInt(isRoom as string) || undefined
+      roomArray
     );
 
     res.status(200).json(filterResults);

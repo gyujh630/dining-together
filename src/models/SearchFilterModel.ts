@@ -23,7 +23,7 @@ export const getAllStoresBySearch = async (
   }
 };
 
-// 날짜, 지역, 음식유형, 인당 가격, 분위기, 룸 유무 필터 조회
+// 날짜, 지역, 음식유형, 인당 가격, 분위기, 룸 필터 조회
 export const getAllStoresByFilter = async (
   selectedDate: string | undefined,
   location: string | undefined,
@@ -31,7 +31,7 @@ export const getAllStoresByFilter = async (
   minCost: number | undefined,
   maxCost: number | undefined,
   moods: string[] | undefined,
-  isRoom: number | undefined
+  rooms: string[] | undefined
 ): Promise<Store[]> => {
   try {
     const values = [];
@@ -78,9 +78,10 @@ export const getAllStoresByFilter = async (
       values.push(...moods.map((mood) => `%${mood}%`));
     }
 
-    if (isRoom) {
-      values.push(isRoom);
-      filterConditions.push(`s.isRoom = ?`);
+    if (rooms) {
+      const placeTypeConditions = rooms.map(() => 'p.placeType = ?');
+      filterConditions.push(`(${placeTypeConditions.join(' OR ')})`);
+      values.push(...rooms.map((roomType) => `${roomType}`));
     }
 
     const filterQuery = `
