@@ -5,6 +5,7 @@ import path from 'path';
 import { Request } from 'express';
 import { StoreImage, addImageToStore } from './StoreImageModel';
 import { seoulRegionList, convertUtcToKoreaTime } from '../utils/string-util';
+import { getUserById } from './userModel';
 
 export interface Store {
   storeId?: number; // 자동 생성
@@ -128,7 +129,7 @@ export const getStoreByUserId = async (
 ): Promise<Store | null> => {
   try {
     const query = `
-      SELECT S.*, MIN(SI.imageUrl) AS imageUrl
+      SELECT S.*, SI.imageUrl
       FROM STORE S
       LEFT JOIN STOREIMAGE SI ON S.storeId = SI.storeId
       WHERE userId = ? AND isDeleted = 0;
@@ -220,11 +221,12 @@ export const getHomeWhenLogin = async (
   userId: number,
   userType: number
 ): Promise<any> => {
-  const randomRegion =
-    seoulRegionList[Math.floor(Math.random() * seoulRegionList.length)];
   try {
+    const user = await getUserById(userId);
+
+    const userLocation = user?.location;
     //지역 랜덤 추천 쿼리
-    const regionRandomQuery = `
+    const regionQuery = `
       SELECT S.storeId, S.storeName, S.foodCategory, MIN(SI.imageUrl) AS imageUrl
       FROM STORE S
       LEFT JOIN STOREIMAGE SI ON S.storeId = SI.storeId
@@ -264,13 +266,13 @@ export const getHomeWhenLogin = async (
       LIMIT 10;
     `;
 
-    const [regionRandomList] = await pool.query(regionRandomQuery, ['강남']);
+    const [regionList] = await pool.query(regionQuery, [userLocation]);
     const [bigList] = await pool.query(bigStoreQuery);
     const [newStoreList] = await pool.query(newStoreQuery);
 
     // 동적인 속성 이름을 사용하여 객체 생성
     const result: { [key: string]: any } = {
-      [randomRegion]: regionRandomList,
+      [userLocation as string]: regionList,
       '30인 이상 단체 가능!': bigList,
       '새로 입점했어요': newStoreList,
     };
