@@ -157,3 +157,18 @@ export const convertUtcToKoreaTime = (utcDate: Date): Date => {
   const koreanTime = new Date(utcDate.getTime() + koreaOffset);
   return koreanTime;
 };
+
+export const meetToMoodMap: Record<string, string> = {
+  '직장 모임': '%모던한%',
+  '대학교 모임': '%시끌벅적한%',
+  '동아리': '%시끌벅적한%',
+  '비즈니스 미팅': '%비즈니스 미팅%',
+  '가족 행사': '%전통적인%',
+  '스터디 모임': '%심플한%',
+  '스포츠 동호회': '%시끌벅적한%',
+  '동창회': '%시끌벅적한%',
+  '업계 네트워킹': '%비즈니스 미팅%',
+  '동호회': '%시끌벅적한%',
+  '친구 모임': '%뷰맛집%',
+  '기타': '%시끌벅적한%',
+};
