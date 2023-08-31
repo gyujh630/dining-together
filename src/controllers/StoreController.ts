@@ -84,17 +84,19 @@ export const updateStoreHandler = async (
 ): Promise<void> => {
   try {
     const storeId = parseInt(req.params.storeId, 10);
-    const { updatedStore, storeImage } = req.body;
+    const { updatedStore } = req.body;
     const imagePath = req.file?.filename;
 
-    if (typeof updatedStore.address === 'string') {
+    if (updatedStore && typeof updatedStore.address === 'string') {
       updatedStore.address = JSON.parse(updatedStore.address);
     }
-    if (typeof updatedStore.operatingHours === 'string') {
+    if (updatedStore && typeof updatedStore.operatingHours === 'string') {
       updatedStore.operatingHours = JSON.parse(updatedStore.operatingHours);
     }
 
-    await updateStore(storeId, updatedStore, imagePath, storeImage);
+    console.log(req.file);
+
+    await updateStore(storeId, updatedStore, imagePath);
     res.status(200).json({ message: 'Store updated successfully' });
   } catch (error) {
     console.error(error);

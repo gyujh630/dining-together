@@ -165,23 +165,27 @@ export const getStoreById = async (storeId: number): Promise<Store | null> => {
 export const updateStore = async (
   storeId: number,
   updatedStore: Store | undefined,
-  imagePath: string | undefined,
-  storeImage: StoreImage | undefined
+  imagePath: string | undefined
 ): Promise<void> => {
   try {
     const modifiedAt = new Date();
-
-    let updateFields = '';
-    let values: any[] = [modifiedAt, storeId];
+    let updateStoreQuery = '';
+    const storeValues: any[] = [modifiedAt, storeId];
 
     if (updatedStore) {
-      updateFields = Object.entries(updatedStore)
+      const storeUpdateFields = Object.entries(updatedStore)
         .filter(([key, value]) => value !== undefined && key !== 'storeId')
         .map(([key]) => `${key} = ?`)
         .join(', ');
 
-      if (updateFields) {
-        values = Object.entries(updatedStore)
+      if (storeUpdateFields) {
+        updateStoreQuery = `
+          UPDATE STORE
+          SET ${storeUpdateFields}, modifiedAt = ?
+          WHERE storeId = ?;
+        `;
+
+        const storeUpdateValues = Object.entries(updatedStore)
           .filter(([key, value]) => value !== undefined && key !== 'storeId')
           .map(([key, value]) => {
             if (key === 'address' || key === 'operatingHours') {
@@ -190,60 +194,34 @@ export const updateStore = async (
             return value;
           });
 
-        values.push(modifiedAt, storeId);
+        storeValues.push(...storeUpdateValues);
       }
     }
 
     if (imagePath !== undefined) {
-      const imageUrl = `uploads/${imagePath}`;
-
-      if (storeImage && storeImage.imageId) {
-        await updateImageByImageId(storeImage.imageId, imageUrl);
-      } else {
-        throw new Error('No imageId provided for storeImage');
-      }
+      const updateImageQuery = `
+      UPDATE STOREIMAGE
+      SET imageUrl = ?
+      WHERE storeId = ? AND imageId = (
+        SELECT imageId FROM (
+          SELECT MIN(imageId) AS imageId FROM STOREIMAGE WHERE storeId = ?
+        ) AS subquery
+      );
+    `;
+      await pool.query(updateImageQuery, [
+        `uploads/${imagePath}`,
+        storeId,
+        storeId,
+      ]);
     }
 
-    if (updateFields) {
-      const updateStoreQuery = `
-        UPDATE STORE
-        SET ${updateFields}, modifiedAt = ?
-        WHERE storeId = ?;
-      `;
-
-      await pool.query(updateStoreQuery, values);
+    if (!updateStoreQuery && !imagePath) {
+      throw new Error('No fields to update');
     }
-    // const updateFields = Object.entries(updatedStore)
-    //   .filter(([key, value]) => value !== undefined && key !== 'storeId')
-    //   .map(([key]) => `${key} = ?`)
-    //   .join(', ');
 
-    // if (!updateFields) {
-    //   throw new Error('No fields to update');
-    // }
-
-    // const values = Object.entries(updatedStore)
-    //   .filter(([key, value]) => value !== undefined && key !== 'storeId')
-    //   .map(([key, value]) => {
-    //     if (key === 'address' || key === 'operatingHours') {
-    //       return JSON.stringify(value);
-    //     }
-    //     return value;
-    //   });
-
-    // const updateStoreQuery = `
-    //   UPDATE STORE
-    //   SET ${updateFields}, modifiedAt = ?
-    //   WHERE storeId = ?;
-    // `;
-
-    // values.push(modifiedAt, storeId);
-    // await pool.query(updateStoreQuery, values);
-
-    // if (imagePath !== undefined) {
-    //   const imageUrl = `uploads/${imagePath}`;
-    //   await updateImageByImageId(storeId, imageUrl);
-    // }
+    if (updateStoreQuery) {
+      await pool.query(updateStoreQuery, storeValues);
+    }
   } catch (error) {
     console.error(error);
     throw new Error('Failed to update store');
