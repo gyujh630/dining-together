@@ -33,8 +33,8 @@ storeRouter.get('/filter', filterStoresHandler);
 // STORE
 storeRouter.post(
   '/',
-  verifyToken,
   upload.array('storeImage', 5),
+  verifyToken,
   createStoreHandler
 );
 storeRouter.get('/', getAllStoresHandler);
