@@ -9,9 +9,17 @@ export const searchStoresHandler = async (
   req: Request,
   res: Response
 ): Promise<void> => {
-  const { searchItem } = req.query;
+  const { page, searchItem } = req.query;
   try {
-    const searchResultes = await getAllStoresBySearch(searchItem as string);
+    const pageNumber = parseInt(page as string) || 1; // 페이지 번호
+    const itemsPerPage = 10; // 페이지당 가게 개수
+
+    const searchResultes = await getAllStoresBySearch(
+      searchItem as string,
+      pageNumber,
+      itemsPerPage
+    );
+
     res.status(200).json(searchResultes);
   } catch (error) {
     console.error(error);
@@ -42,7 +50,7 @@ export const filterStoresHandler = async (
     const roomArray = room ? (room as string).split(',') : undefined;
 
     const pageNumber = parseInt(page as string) || 1; // 페이지 번호
-    const itemsPerPage = 5; // 페이지당 가게 개수
+    const itemsPerPage = 10; // 페이지당 가게 개수
 
     const filterResults = await getAllStoresByFilter(
       selectedDate as string | undefined,

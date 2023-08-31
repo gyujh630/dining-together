@@ -3,14 +3,20 @@ import Store from './StoreModel';
 
 // 식당명, 키워드 검색 조회
 export const getAllStoresBySearch = async (
-  searchItem: string
+  searchItem: string,
+  pageNumber: number,
+  itemsPerPage: number
 ): Promise<Store[]> => {
   try {
+    const startIndex = (pageNumber - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+
     const searchQuery = `
       SELECT STORE.*, STOREIMAGE.imageUrl 
       FROM STORE
       LEFT JOIN STOREIMAGE ON STORE.storeId = STOREIMAGE.storeId  
-      WHERE storeName LIKE ? OR keyword LIKE ?;
+      WHERE storeName LIKE ? OR keyword LIKE ?
+      LIMIT ${startIndex}, ${itemsPerPage};
     `;
 
     const values = [`%${searchItem}%`, `%${searchItem}%`];
@@ -100,9 +106,6 @@ export const getAllStoresByFilter = async (
       ${groupByClause}
       LIMIT ${startIndex}, ${itemsPerPage}
     `;
-
-    console.log(filterQuery);
-    console.log(values);
 
     const [rows] = await pool.query(filterQuery, values);
 
