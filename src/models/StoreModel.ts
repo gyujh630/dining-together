@@ -46,8 +46,8 @@ export const createStore = async (
 
     const query = `
       INSERT INTO STORE
-        (userId, storeName, storeContact, address, location, description, keyword, mood, operatingHours, closedDays, foodCategory, maxNum, cost, isParking, isRoom, createdAt, modifiedAt)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+        (userId, storeName, storeContact, address, location, description, keyword, mood, operatingHours, closedDays, foodCategory, maxNum, cost, isParking)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
     `;
 
     const values = [
@@ -65,7 +65,6 @@ export const createStore = async (
       store.maxNum,
       store.cost,
       store.isParking,
-      store.isRoom,
     ];
 
     const [result] = await pool.query(query, values);
