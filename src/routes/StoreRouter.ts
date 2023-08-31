@@ -31,12 +31,7 @@ storeRouter.get('/search', searchStoresHandler);
 storeRouter.get('/filter', filterStoresHandler);
 
 // STORE
-storeRouter.post(
-  '/',
-  verifyToken,
-  upload.array('storeImage', 5),
-  createStoreHandler
-);
+storeRouter.post('/', upload.array('storeImage', 5), createStoreHandler);
 storeRouter.get('/', getAllStoresHandler);
 storeRouter.get('/my', verifyToken, getMyStoreHandler);
 storeRouter.get('/:storeId', getStoreHandler);

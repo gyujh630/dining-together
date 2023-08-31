@@ -1,6 +1,10 @@
 import { Request, Response } from 'express';
 import { generateAuthToken, revokeToken } from '../utils/jwt-util';
-import { isEmailValid, isPasswordValid } from '../utils/string-util';
+import {
+  isEmailValid,
+  isPasswordValid,
+  validatePhoneNumber,
+} from '../utils/string-util';
 import { User } from '../models/userModel';
 import {
   createUser,
@@ -25,6 +29,10 @@ export async function createUserHandler(
     }
     if (!isPasswordValid(newUser.password)) {
       res.status(400).json({ error: '유효하지 않은 비밀번호 형식입니다.' });
+      return;
+    }
+    if (!validatePhoneNumber(newUser.phoneNum)) {
+      res.status(400).json({ error: '유효하지 않은 연락처 형식입니다.' });
       return;
     }
 

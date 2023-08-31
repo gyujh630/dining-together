@@ -128,6 +128,15 @@ export const isPasswordValid = function (password: string): boolean {
   return passwordRegEx.test(password);
 };
 
+export function validatePhoneNumber(phoneNumber: string) {
+  var regex = /^(01[016789])(\d{8})$/;
+  if (regex.test(phoneNumber)) {
+    return true; // 유효한 번호
+  } else {
+    return false; // 유효하지 않은 번호
+  }
+}
+
 export const stringToDate = (date: string) => {
   const parts = date.split('-');
   const year = 2000 + parseInt(parts[0]);
