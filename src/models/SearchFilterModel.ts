@@ -31,7 +31,9 @@ export const getAllStoresByFilter = async (
   minCost: number | undefined,
   maxCost: number | undefined,
   moods: string[] | undefined,
-  rooms: string[] | undefined
+  rooms: string[] | undefined,
+  pageNumber: number,
+  itemsPerPage: number
 ): Promise<Store[]> => {
   try {
     const values = [];
@@ -84,6 +86,9 @@ export const getAllStoresByFilter = async (
       values.push(...rooms.map((roomType) => `${roomType}`));
     }
 
+    const startIndex = (pageNumber - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+
     const filterQuery = `
       SELECT s.*, MAX(si.imageUrl) as imageUrl
       FROM STORE s
@@ -93,6 +98,7 @@ export const getAllStoresByFilter = async (
         ' AND '
       )}
       ${groupByClause}
+      LIMIT ${startIndex}, ${itemsPerPage}
     `;
 
     console.log(filterQuery);

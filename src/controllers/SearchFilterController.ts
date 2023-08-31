@@ -24,14 +24,26 @@ export const filterStoresHandler = async (
   req: Request,
   res: Response
 ): Promise<void> => {
-  const { selectedDate, location, foodCategory, minCost, maxCost, mood, room } =
-    req.query;
+  const {
+    page,
+    selectedDate,
+    location,
+    foodCategory,
+    minCost,
+    maxCost,
+    mood,
+    room,
+  } = req.query;
   try {
     const foodCategoryArray = foodCategory
       ? (foodCategory as string).split(',')
       : undefined;
     const moodArray = mood ? (mood as string).split(',') : undefined;
     const roomArray = room ? (room as string).split(',') : undefined;
+
+    const pageNumber = parseInt(page as string) || 1; // 페이지 번호
+    const itemsPerPage = 5; // 페이지당 가게 개수
+
     const filterResults = await getAllStoresByFilter(
       selectedDate as string | undefined,
       location as string | undefined,
@@ -39,7 +51,9 @@ export const filterStoresHandler = async (
       parseInt(minCost as string) || undefined,
       parseInt(maxCost as string) || undefined,
       moodArray,
-      roomArray
+      roomArray,
+      pageNumber,
+      itemsPerPage
     );
 
     res.status(200).json(filterResults);
