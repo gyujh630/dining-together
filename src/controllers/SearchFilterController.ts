@@ -14,20 +14,22 @@ export const searchStoresHandler = async (
     const pageNumber = parseInt(page as string) || 1; // 페이지 번호
     const itemsPerPage = 10; // 페이지당 가게 개수
 
-    const searchResultes = await getAllStoresBySearch(
+    const [searchResultes, totalCount] = await getAllStoresBySearch(
       searchItem as string,
       pageNumber,
       itemsPerPage
     );
 
-    res.status(200).json(searchResultes);
+    const isLastPage = searchResultes.length < itemsPerPage;
+
+    res.status(200).json({ stores: searchResultes, totalCount, isLastPage });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Failed to search stores' });
   }
 };
 
-// 필터 조회 (날짜, 지역, 음식유형, 인당 가격, 분위기, 룸 유무)
+// 필터 조회 (날짜, 지역, 음식유형, 인당 가격, 분위기, 룸 유형)
 export const filterStoresHandler = async (
   req: Request,
   res: Response
@@ -52,7 +54,7 @@ export const filterStoresHandler = async (
     const pageNumber = parseInt(page as string) || 1; // 페이지 번호
     const itemsPerPage = 10; // 페이지당 가게 개수
 
-    const filterResults = await getAllStoresByFilter(
+    const [filterResults, totalCount] = await getAllStoresByFilter(
       selectedDate as string | undefined,
       location as string | undefined,
       foodCategoryArray,
@@ -64,7 +66,9 @@ export const filterStoresHandler = async (
       itemsPerPage
     );
 
-    res.status(200).json(filterResults);
+    const isLastPage = filterResults.length < itemsPerPage;
+
+    res.status(200).json({ stores: filterResults, totalCount, isLastPage });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Failed to filter stores' });

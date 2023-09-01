@@ -6,23 +6,31 @@ export const getAllStoresBySearch = async (
   searchItem: string,
   pageNumber: number,
   itemsPerPage: number
-): Promise<Store[]> => {
+): Promise<[Store[], number]> => {
   try {
     const startIndex = (pageNumber - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
 
     const searchQuery = `
-      SELECT STORE.*, STOREIMAGE.imageUrl 
+      SELECT STORE.*, STOREIMAGE.imageUrl
       FROM STORE
       LEFT JOIN STOREIMAGE ON STORE.storeId = STOREIMAGE.storeId  
       WHERE storeName LIKE ? OR keyword LIKE ?
       LIMIT ${startIndex}, ${itemsPerPage};
     `;
 
+    const countQuery = `
+      SELECT COUNT(*) as totalCount
+      FROM STORE
+      WHERE storeName LIKE ? OR keyword LIKE ?;
+    `;
+
     const values = [`%${searchItem}%`, `%${searchItem}%`];
 
     const [rows] = await pool.query(searchQuery, values);
-    return rows as Store[];
+    const [totalCountRows]: any[] = await pool.query(countQuery, values);
+    const totalCount = totalCountRows[0].totalCount;
+
+    return [rows as Store[], totalCount];
   } catch (error) {
     console.error(error);
     throw new Error('Failed to fetch stores');
@@ -40,11 +48,10 @@ export const getAllStoresByFilter = async (
   rooms: string[] | undefined,
   pageNumber: number,
   itemsPerPage: number
-): Promise<Store[]> => {
+): Promise<[Store[], number]> => {
   try {
     const values = [];
     const filterConditions = [];
-    const groupByClause = 'GROUP BY s.storeId';
 
     if (selectedDate) {
       values.push(selectedDate);
@@ -93,7 +100,6 @@ export const getAllStoresByFilter = async (
     }
 
     const startIndex = (pageNumber - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
 
     const filterQuery = `
       SELECT s.*, MAX(si.imageUrl) as imageUrl
@@ -103,13 +109,24 @@ export const getAllStoresByFilter = async (
       ${filterConditions.length > 0 ? 'WHERE' : ''} ${filterConditions.join(
         ' AND '
       )}
-      ${groupByClause}
+      GROUP BY s.storeId
       LIMIT ${startIndex}, ${itemsPerPage}
     `;
 
-    const [rows] = await pool.query(filterQuery, values);
+    const countQuery = `
+      SELECT COUNT(DISTINCT s.storeId) as totalCount
+      FROM STORE s
+      ${values.length > 0 ? 'INNER JOIN PLACE p ON s.storeId = p.storeId' : ''}
+      ${filterConditions.length > 0 ? 'WHERE' : ''} ${filterConditions.join(
+        ' AND '
+      )}
+    `;
 
-    return rows as Store[];
+    const [rows] = await pool.query(filterQuery, values);
+    const [totalCountRows]: any[] = await pool.query(countQuery, values);
+    const totalCount = totalCountRows[0].totalCount;
+
+    return [rows as Store[], totalCount];
   } catch (error) {
     console.error(error);
     throw new Error('Failed to fetch stores');
