@@ -295,7 +295,7 @@ export const getHomeWhenLogin = async (userId: number): Promise<any> => {
       LIMIT 10;
     `;
 
-    //30인 이상 단체 가능 쿼리
+    //50인 이상 단체 가능 쿼리
     const bigStoreQuery = `
       SELECT S.storeId, storeName, foodCategory, MIN(SI.imageUrl) AS imageUrl, MIN(P.minPeople) AS minPeople, MAX(P.maxPeople) AS maxPeople
       FROM STORE S
@@ -307,7 +307,7 @@ export const getHomeWhenLogin = async (userId: number): Promise<any> => {
       ON S.storeId = MaxPlaces.storeId
       LEFT JOIN STOREIMAGE SI ON S.storeId = SI.storeId
       LEFT JOIN PLACE P ON S.storeId = P.storeId
-      WHERE MaxPlaces.maxPeople >= 30
+      WHERE MaxPlaces.maxPeople >= 50
       AND S.isDeleted = 0
       GROUP BY S.storeId
       ORDER BY RAND()
@@ -355,7 +355,7 @@ export const getHomeWhenLogin = async (userId: number): Promise<any> => {
       result[recommendTitle] = customList;
     }
 
-    result['30인 이상 단체 가능!'] = bigList;
+    result['50인 이상 단체 가능!'] = bigList;
     result['새로 입점했어요'] = newStoreList;
 
     return result;
@@ -382,7 +382,7 @@ export const getHomeWhenNotLogin = async (): Promise<any> => {
       LIMIT 10;
     `;
 
-    //30인 이상 단체 가능 쿼리
+    //50인 이상 단체 가능 쿼리
     const bigStoreQuery = `
       SELECT S.storeId, storeName, foodCategory, MIN(SI.imageUrl) AS imageUrl, MIN(P.minPeople) AS minPeople, MAX(P.maxPeople) AS maxPeople
       FROM STORE S
@@ -394,7 +394,7 @@ export const getHomeWhenNotLogin = async (): Promise<any> => {
       ON S.storeId = MaxPlaces.storeId
       LEFT JOIN STOREIMAGE SI ON S.storeId = SI.storeId
       LEFT JOIN PLACE P ON S.storeId = P.storeId
-      WHERE MaxPlaces.maxPeople >= 30
+      WHERE MaxPlaces.maxPeople >= 50
       AND S.isDeleted = 0
       GROUP BY S.storeId
       ORDER BY RAND()
@@ -424,7 +424,7 @@ export const getHomeWhenNotLogin = async (): Promise<any> => {
     // 동적인 속성 이름을 사용하여 객체 생성
     const result = {
       [locationTitle]: regionRandomList,
-      '30인 이상 단체 가능!': bigList,
+      '50인 이상 단체 가능!': bigList,
       '새로 입점했어요': newStoreList,
     };
 
