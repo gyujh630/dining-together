@@ -141,10 +141,11 @@ export const getStoreByUserId = async (
 };
 
 // 특정 가게 조회
+
 export const getStoreById = async (storeId: number): Promise<Store | null> => {
   try {
     const query = `
-      SELECT STORE.*, STOREIMAGE.imageUrl
+      SELECT STORE.*, GROUP_CONCAT(STOREIMAGE.imageUrl) as imageUrls
       FROM STORE 
       LEFT JOIN STOREIMAGE ON STORE.storeId = STOREIMAGE.storeId
       WHERE STORE.storeId = ? AND STORE.isDeleted = 0;
@@ -152,7 +153,14 @@ export const getStoreById = async (storeId: number): Promise<Store | null> => {
 
     const [rows] = await pool.query(query, [storeId]);
     if (Array.isArray(rows) && rows.length > 0) {
-      return rows[0] as Store;
+      const storeData = rows[0] as any; // 이미지 URL을 배열로 가지는 Store 객체로 형변환
+
+      // 이미지 URL을 배열로 분할
+      if (storeData.imageUrls) {
+        storeData.imageUrls = storeData.imageUrls.split(',');
+      }
+
+      return storeData as Store;
     }
     return null;
   } catch (error) {
