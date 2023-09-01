@@ -14,14 +14,6 @@ declare global {
   }
 }
 
-// 무효화된 토큰 목록
-const revokedTokens = new Set<string>();
-
-// 토큰을 무효화하는 함수
-export const revokeToken = (token: string) => {
-  revokedTokens.add(token);
-};
-
 export const generateAuthToken = (user: DecodedToken): string => {
   const { userId, userType } = user;
   const token = jwt.sign(
@@ -50,14 +42,6 @@ export const verifyToken = (
       tokenString[1],
       process.env.JWT_SECRET as Secret
     );
-
-    // 로그아웃된 경우
-    if (revokedTokens.has(req.headers.authorization as string)) {
-      return res.status(419).json({
-        code: 401,
-        message: '권한 만료',
-      });
-    }
 
     req.decoded = decoded as DecodedToken;
     return next();

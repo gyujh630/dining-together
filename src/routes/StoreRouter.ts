@@ -37,6 +37,7 @@ storeRouter.post(
   verifyToken,
   createStoreHandler
 );
+storeRouter.get('/reserve', verifyToken, getReservationsByStoreIdHandler);
 storeRouter.get('/', getAllStoresHandler);
 storeRouter.get('/my', verifyToken, getMyStoreHandler);
 storeRouter.get('/:storeId', getStoreHandler);
@@ -45,11 +46,6 @@ storeRouter.put(
   verifyToken,
   upload.single('storeImage'),
   updateStoreHandler
-);
-storeRouter.get(
-  '/:storeId/reserve',
-  verifyToken,
-  getReservationsByStoreIdHandler
 );
 
 // PLACE

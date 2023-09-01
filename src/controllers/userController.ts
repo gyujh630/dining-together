@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { generateAuthToken, revokeToken } from '../utils/jwt-util';
+import { generateAuthToken } from '../utils/jwt-util';
 import {
   isEmailValid,
   isPasswordValid,
@@ -11,7 +11,6 @@ import {
   getUserById,
   getAllUser,
   updateUserById,
-  // deleteUserById,
   authenticateUser,
   checkEmail,
 } from '../models/userModel';
@@ -81,18 +80,6 @@ export async function logInHandler(req: Request, res: Response): Promise<void> {
     } else {
       res.status(401).json({ error: 'No Matching User' }); //일치하는 사용자 정보 없음
     }
-  } catch (error: any) {
-    res.status(500).send(`Error: ${error.message}`);
-  }
-}
-
-export async function logOutHandler(
-  req: Request,
-  res: Response
-): Promise<void> {
-  try {
-    revokeToken(req.headers.authorization as string); //토큰 무효화
-    res.status(200).json({ message: 'Logout Success' });
   } catch (error: any) {
     res.status(500).send(`Error: ${error.message}`);
   }
