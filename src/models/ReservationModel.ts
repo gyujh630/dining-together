@@ -110,7 +110,7 @@ export async function getReservationsByUserId(userId: number): Promise<any> {
     S.storeName,
     S.location,
     S.foodCategory,
-    SI.imageUrl,
+    MIN(SI.imageUrl) AS imageUrl,
     P.placeName,
     P.placeType
     FROM
@@ -182,7 +182,7 @@ export async function getReservationsByStoreId(
     S.storeName,
     S.location,
     S.foodCategory,
-    SI.imageUrl,
+    MIN(SI.imageUrl) AS imageUrl,
     P.placeName,
     P.placeType
     FROM
