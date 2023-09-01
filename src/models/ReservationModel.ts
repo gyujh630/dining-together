@@ -110,7 +110,7 @@ export async function getReservationsByUserId(userId: number): Promise<any> {
     S.storeName,
     S.location,
     S.foodCategory,
-    MIN(SI.imageUrl) AS imageUrl,
+    SI.imageUrl,
     P.placeName,
     P.placeType
     FROM
@@ -119,8 +119,11 @@ export async function getReservationsByUserId(userId: number): Promise<any> {
     STORE S ON R.storeId = S.storeId
     JOIN
     PLACE P ON R.placeId = P.placeId
-    LEFT JOIN
-    STOREIMAGE SI ON R.storeId = SI.storeId
+    LEFT JOIN (
+        SELECT storeId, MIN(imageUrl) as imageUrl
+        FROM STOREIMAGE
+        GROUP BY storeId
+        ) SI ON S.storeId = SI.storeId  
     WHERE R.userId = ?
   `;
 
@@ -182,17 +185,25 @@ export async function getReservationsByStoreId(
     S.storeName,
     S.location,
     S.foodCategory,
-    MIN(SI.imageUrl) AS imageUrl,
+    SI.imageUrl,
     P.placeName,
-    P.placeType
+    P.placeType,
+    U.name,
+    U.email,
+    U.phoneNum
     FROM
     RESERVATION R
     JOIN
     STORE S ON R.storeId = S.storeId
     JOIN
     PLACE P ON R.placeId = P.placeId
-    LEFT JOIN
-    STOREIMAGE SI ON R.storeId = SI.storeId
+    JOIN
+    USER U ON R.userId = U.userId
+    LEFT JOIN (
+        SELECT storeId, MIN(imageUrl) as imageUrl
+        FROM STOREIMAGE
+        GROUP BY storeId
+        ) SI ON S.storeId = SI.storeId  
     WHERE
     R.storeId = ?;
   `;

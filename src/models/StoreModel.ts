@@ -309,7 +309,7 @@ export const getHomeWhenLogin = async (userId: number): Promise<any> => {
       LEFT JOIN PLACE P ON S.storeId = P.storeId
       WHERE MaxPlaces.maxPeople >= 50
       AND S.isDeleted = 0
-      GROUP BY S.storeIdg
+      GROUP BY S.storeId
       ORDER BY RAND()
       LIMIT 10;
     `;
