@@ -10,7 +10,7 @@ import {
   getReservationById,
   isAvailableReservation,
 } from '../models/ReservationModel';
-import { getStoreById, getUserById } from '../models';
+import { getStoreById, getStoreByUserId, getUserById } from '../models';
 import {
   getPlaceByPlaceId,
   findAvailablePlacesByDate,
@@ -123,11 +123,12 @@ export async function getReservationsByStoreIdHandler(
   res: Response
 ): Promise<void> {
   try {
-    const storeId = parseInt(req.params.storeId, 10);
-    const store = await getStoreById(storeId);
+    const userId = req.decoded.userId; //토큰에서 가져온 아이디
+    const store = await getStoreByUserId(userId);
     if (!store) {
       res.status(404).json({ error: 'Store not found' });
     } else {
+      const storeId = store?.storeId as number;
       const reservations = await getReservationsByStoreId(storeId);
       res.status(200).json(reservations);
     }
