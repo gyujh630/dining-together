@@ -11,9 +11,13 @@ export const getAllStoresBySearch = async (
     const startIndex = (pageNumber - 1) * itemsPerPage;
 
     const searchQuery = `
-      SELECT STORE.*, STOREIMAGE.imageUrl
-      FROM STORE
-      LEFT JOIN STOREIMAGE ON STORE.storeId = STOREIMAGE.storeId  
+      SELECT s.*, si.imageUrl
+      FROM STORE s
+      LEFT JOIN (
+        SELECT storeId, MIN(imageUrl) as imageUrl
+        FROM STOREIMAGE
+        GROUP BY storeId
+        ) si ON s.storeId = si.storeId  
       WHERE storeName LIKE ? OR keyword LIKE ?
       LIMIT ${startIndex}, ${itemsPerPage};
     `;
@@ -102,7 +106,7 @@ export const getAllStoresByFilter = async (
     const startIndex = (pageNumber - 1) * itemsPerPage;
 
     const filterQuery = `
-      SELECT s.*, MAX(si.imageUrl) as imageUrl
+      SELECT s.*, MIN(si.imageUrl) as imageUrl
       FROM STORE s
       LEFT JOIN STOREIMAGE si ON s.storeId = si.storeId  
       ${values.length > 0 ? 'INNER JOIN PLACE p ON s.storeId = p.storeId' : ''}
