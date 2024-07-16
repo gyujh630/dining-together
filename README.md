@@ -1,4 +1,4 @@
-# 회식어때 🍺
+# 회식어때
 
 <p align="center"><img src="https://github.com/gyujh630/busking/assets/109525139/81580276-7c51-444b-ada8-0c062bf0a389" width=80%></p>
 
@@ -23,6 +23,7 @@
 - MySQL
 - JWT
 - multer.js
+```
 
 #### DevOps
 ```
